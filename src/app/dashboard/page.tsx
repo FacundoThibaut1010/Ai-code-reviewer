@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { fetchUserRepos } from '@/lib/github';
@@ -13,7 +13,6 @@ import {
   Lock,
   Globe,
   FolderGit,
-  Loader2,
   ChevronRight,
   RefreshCw,
 } from 'lucide-react';
@@ -29,7 +28,7 @@ export default function DashboardPage() {
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [selectedType, setSelectedType] = useState<'all' | 'public' | 'private'>('all');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -49,9 +48,10 @@ export default function DashboardPage() {
 
       const fetchedRepos = await fetchUserRepos(token);
       setRepos(fetchedRepos);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching user repositories:', err);
-      if (err.message?.includes('401') || err.message?.includes('token')) {
+      const errMessage = err instanceof Error ? err.message : '';
+      if (errMessage.includes('401') || errMessage.includes('token')) {
         setError('Tu sesión de GitHub ha expirado. Por favor, volvé a iniciar sesión.');
         localStorage.removeItem('github_provider_token');
         await supabase.auth.signOut();
@@ -62,11 +62,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     loadData();
-  }, [router]);
+  }, [loadData]);
 
   // Extract unique languages for filter dropdown
   const uniqueLanguages = Array.from(

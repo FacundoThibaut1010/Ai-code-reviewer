@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { LogOut, History, LayoutDashboard, Terminal, Github } from 'lucide-react';
+import { LogOut, History, LayoutDashboard, Terminal } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -94,6 +94,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             {!loading && user && (
               <div className="flex items-center space-x-3 border-l border-slate-800 pl-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={user.user_metadata.avatar_url}
                   alt={user.user_metadata.full_name || 'GitHub avatar'}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { fetchRepoPullRequests } from '@/lib/github';
@@ -12,10 +12,8 @@ import {
   Award,
   Calendar,
   User,
-  Loader2,
   RefreshCw,
   Eye,
-  CheckCircle2,
   HelpCircle,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -35,7 +33,7 @@ export default function RepoPullRequestsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'open' | 'closed' | 'all'>('all');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -76,19 +74,19 @@ export default function RepoPullRequestsPage() {
       });
 
       setPrs(mergedPRs);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading PRs:', err);
       setError('No se pudieron cargar las Pull Requests. Verificá tu token y la conexión.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [owner, repo, router]);
 
   useEffect(() => {
     if (owner && repo) {
       loadData();
     }
-  }, [owner, repo, router]);
+  }, [owner, repo, loadData]);
 
   // Apply search query and status filter
   const filteredPRs = prs.filter((pr) => {

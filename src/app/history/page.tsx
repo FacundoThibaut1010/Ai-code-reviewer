@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SavedReview } from '@/types';
 import ReviewRenderer from '@/components/ReviewRenderer';
@@ -19,7 +19,6 @@ import {
   Loader2,
   ExternalLink,
 } from 'lucide-react';
-import Link from 'next/link';
 
 export default function HistoryPage() {
   const [reviews, setReviews] = useState<SavedReview[]>([]);
@@ -34,7 +33,7 @@ export default function HistoryPage() {
   const [selectedRepo, setSelectedRepo] = useState('all');
   const [selectedDateFilter, setSelectedDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -52,17 +51,17 @@ export default function HistoryPage() {
       if (dbError) throw dbError;
 
       setReviews(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching review history:', err);
       setError('No se pudo cargar el historial de reviews.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadHistory();
-  }, []);
+  }, [loadHistory]);
 
   const handleDeleteReview = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Avoid triggering expand/collapse
@@ -252,7 +251,7 @@ export default function HistoryPage() {
               </div>
               <select
                 value={selectedDateFilter}
-                onChange={(e) => setSelectedDateFilter(e.target.value as any)}
+                onChange={(e) => setSelectedDateFilter(e.target.value as 'all' | 'today' | 'week' | 'month')}
                 className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-10 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 <option value="all">Cualquier fecha</option>

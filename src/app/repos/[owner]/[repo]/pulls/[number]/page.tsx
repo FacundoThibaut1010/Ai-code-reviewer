@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { fetchPullRequestDetails, fetchPullRequestDiff } from '@/lib/github';
@@ -15,7 +15,6 @@ import {
   Zap,
   AlertTriangle,
   Lightbulb,
-  Award,
   Play,
   Save,
   Loader2,
@@ -52,7 +51,7 @@ export default function PRDetailsPage() {
     style: true,
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -94,19 +93,19 @@ export default function PRDetailsPage() {
         setReview(existingReview.review_content);
         setIsSavedInDb(true);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading PR data:', err);
       setError('Error al obtener la información de la Pull Request y su diff.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [owner, repo, number, router]);
 
   useEffect(() => {
     if (owner && repo && number) {
       loadData();
     }
-  }, [owner, repo, number, router]);
+  }, [owner, repo, number, loadData]);
 
   const handleStartAIReview = async () => {
     setIsStreaming(true);
@@ -177,7 +176,7 @@ export default function PRDetailsPage() {
                 const parsedReview = parsePartialJson<AIReviewContent>(textAccumulator);
                 setReview(parsedReview);
               }
-            } catch (e) {
+            } catch {
               // Ignore partial parsing errors of incomplete JSON chunks
             }
           }
@@ -194,12 +193,15 @@ export default function PRDetailsPage() {
             const parsedReview = parsePartialJson<AIReviewContent>(textAccumulator);
             setReview(parsedReview);
           }
-        } catch (e) {}
+        } catch {
+          // Ignore final chunk errors
+        }
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error during AI Review streaming:', err);
-      setError(err.message || 'Error durante la llamada de streaming con la IA.');
+      const errMsg = err instanceof Error ? err.message : 'Error durante la llamada de streaming con la IA.';
+      setError(errMsg);
     } finally {
       setIsStreaming(false);
     }
@@ -228,7 +230,7 @@ export default function PRDetailsPage() {
       if (dbError) throw dbError;
 
       setIsSavedInDb(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving review to database:', err);
       setError('No se pudo guardar la review en la base de datos.');
     } finally {
