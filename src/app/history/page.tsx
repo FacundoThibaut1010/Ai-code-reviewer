@@ -1,0 +1,383 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { SavedReview } from '@/types';
+import ReviewRenderer from '@/components/ReviewRenderer';
+import {
+  History,
+  Search,
+  Filter,
+  BarChart3,
+  Calendar,
+  AlertTriangle,
+  Award,
+  ChevronDown,
+  ChevronUp,
+  FolderOpen,
+  Trash2,
+  Loader2,
+  ExternalLink,
+} from 'lucide-react';
+import Link from 'next/link';
+
+export default function HistoryPage() {
+  const [reviews, setReviews] = useState<SavedReview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Expanded review state (stores ID of review currently expanded)
+  const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null);
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRepo, setSelectedRepo] = useState('all');
+  const [selectedDateFilter, setSelectedDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+
+  const loadHistory = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/';
+        return;
+      }
+
+      const { data, error: dbError } = await supabase
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (dbError) throw dbError;
+
+      setReviews(data || []);
+    } catch (err: any) {
+      console.error('Error fetching review history:', err);
+      setError('No se pudo cargar el historial de reviews.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const handleDeleteReview = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Avoid triggering expand/collapse
+    if (!confirm('¿Estás seguro de que deseas eliminar esta reseña del historial?')) return;
+
+    try {
+      const { error: dbError } = await supabase.from('reviews').delete().eq('id', id);
+      if (dbError) throw dbError;
+
+      setReviews(reviews.filter((r) => r.id !== id));
+      if (expandedReviewId === id) setExpandedReviewId(null);
+    } catch (err) {
+      console.error('Error deleting review:', err);
+      alert('Error al eliminar la reseña.');
+    }
+  };
+
+  // Extract unique repositories for the filter dropdown
+  const uniqueRepos = Array.from(
+    new Set(reviews.map((r) => `${r.repo_owner}/${r.repo_name}`))
+  ).sort();
+
+  // Apply filters
+  const filteredReviews = reviews.filter((rev) => {
+    const matchesSearch =
+      rev.pr_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rev.repo_name.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesRepo =
+      selectedRepo === 'all' ||
+      `${rev.repo_owner}/${rev.repo_name}` === selectedRepo;
+
+    // Date matching logic
+    let matchesDate = true;
+    if (selectedDateFilter !== 'all') {
+      const reviewDate = new Date(rev.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - reviewDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (selectedDateFilter === 'today') {
+        matchesDate = reviewDate.toDateString() === now.toDateString();
+      } else if (selectedDateFilter === 'week') {
+        matchesDate = diffDays <= 7;
+      } else if (selectedDateFilter === 'month') {
+        matchesDate = diffDays <= 30;
+      }
+    }
+
+    return matchesSearch && matchesRepo && matchesDate;
+  });
+
+  // Calculate statistics
+  const totalReviews = reviews.length;
+  
+  const totalBugs = reviews.reduce((sum, r) => {
+    const bugsList = r.review_content?.bugs || [];
+    return sum + bugsList.length;
+  }, 0);
+
+  const averageScore =
+    totalReviews > 0
+      ? (reviews.reduce((sum, r) => sum + r.score, 0) / totalReviews).toFixed(1)
+      : '0.0';
+
+  const toggleExpand = (id: string) => {
+    setExpandedReviewId(expandedReviewId === id ? null : id);
+  };
+
+  const getScoreColorClass = (score: number) => {
+    if (score >= 8) return 'bg-emerald-950/40 text-emerald-400 border-emerald-900/30';
+    if (score >= 5) return 'bg-amber-950/40 text-amber-400 border-amber-900/30';
+    return 'bg-rose-950/40 text-rose-400 border-rose-900/30';
+  };
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex-1 flex flex-col w-full">
+      {/* Header */}
+      <div className="pb-6 border-b border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center">
+            <History className="mr-2.5 h-6 w-6 text-indigo-400" />
+            Historial de Reviews
+          </h2>
+          <p className="text-sm text-slate-400 mt-1">
+            Revisá los reportes y estadísticas de tus Pull Requests auditadas anteriormente.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-4 rounded-lg border border-rose-900/50 bg-rose-950/15 p-4 text-sm text-rose-400">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex flex-1 items-center justify-center p-12">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        </div>
+      ) : (
+        <>
+          {/* Statistics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+            {/* Total reviews card */}
+            <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Total Reviews
+                </p>
+                <h3 className="text-2xl font-bold text-white mt-1">{totalReviews}</h3>
+              </div>
+              <div className="p-3 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+            </div>
+
+            {/* Total bugs card */}
+            <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Bugs Detectados
+                </p>
+                <h3 className="text-2xl font-bold text-white mt-1">{totalBugs}</h3>
+              </div>
+              <div className="p-3 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+            </div>
+
+            {/* Average score card */}
+            <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Score Promedio
+                </p>
+                <h3 className="text-2xl font-bold text-white mt-1">{averageScore} / 10</h3>
+              </div>
+              <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <Award className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Filters Area */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 mb-6">
+            {/* Search query */}
+            <div className="relative md:col-span-6">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Search className="h-4 w-4 text-slate-500" />
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar por título de PR o repositorio..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-4 text-sm text-white placeholder-slate-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Repo filter */}
+            <div className="relative md:col-span-3">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Filter className="h-4 w-4 text-slate-500" />
+              </div>
+              <select
+                value={selectedRepo}
+                onChange={(e) => setSelectedRepo(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-10 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="all">Todos los repos</option>
+                {uniqueRepos.map((repo) => (
+                  <option key={repo} value={repo}>
+                    {repo}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
+                <ChevronDown className="h-4 w-4" />
+              </div>
+            </div>
+
+            {/* Date filter */}
+            <div className="relative md:col-span-3">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Calendar className="h-4 w-4 text-slate-500" />
+              </div>
+              <select
+                value={selectedDateFilter}
+                onChange={(e) => setSelectedDateFilter(e.target.value as any)}
+                className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-10 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="all">Cualquier fecha</option>
+                <option value="today">Hoy</option>
+                <option value="week">Últimos 7 días</option>
+                <option value="month">Últimos 30 días</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
+                <ChevronDown className="h-4 w-4" />
+              </div>
+            </div>
+          </div>
+
+          {/* List of Saved Reviews */}
+          {filteredReviews.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-900/20 p-12 text-center my-6">
+              <FolderOpen className="h-10 w-10 text-slate-600 mb-3" />
+              <p className="text-sm font-medium text-slate-400">No hay reviews guardadas.</p>
+              <p className="text-xs text-slate-500 mt-1">Realizá auditorías en tus repositorios y guardalas para verlas acá.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredReviews.map((rev) => {
+                const isExpanded = expandedReviewId === rev.id;
+                const bugsCount = rev.review_content?.bugs?.length || 0;
+                const sugCount = rev.review_content?.sugerencias?.length || 0;
+                const perfCount = rev.review_content?.performance?.length || 0;
+                const secCount = rev.review_content?.security?.length || 0;
+
+                return (
+                  <div
+                    key={rev.id}
+                    className="rounded-xl border border-slate-800 bg-slate-950/40 overflow-hidden shadow-md"
+                  >
+                    {/* Item Summary Header */}
+                    <div
+                      onClick={() => toggleExpand(rev.id)}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-5 bg-slate-900/10 hover:bg-slate-900/20 cursor-pointer transition-colors gap-4"
+                    >
+                      <div className="space-y-1.5 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono text-xs font-semibold text-slate-400 truncate">
+                            {rev.repo_owner}/{rev.repo_name}
+                          </span>
+                          <span className="text-slate-700 font-mono text-xs">•</span>
+                          <span className="font-mono text-xs text-slate-500">PR #{rev.pr_number}</span>
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-200 truncate pr-4">
+                          {rev.pr_title}
+                        </h3>
+                        <div className="flex flex-wrap gap-2 pt-1.5">
+                          {/* Issue counts pills */}
+                          {bugsCount > 0 && (
+                            <span className="rounded bg-rose-500/15 border border-rose-500/25 px-2 py-0.5 text-[9px] text-rose-400 font-mono font-bold">
+                              {bugsCount} Bugs
+                            </span>
+                          )}
+                          {sugCount > 0 && (
+                            <span className="rounded bg-amber-500/15 border border-amber-500/25 px-2 py-0.5 text-[9px] text-amber-400 font-mono font-bold">
+                              {sugCount} Mejoras
+                            </span>
+                          )}
+                          {perfCount > 0 && (
+                            <span className="rounded bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 text-[9px] text-emerald-400 font-mono font-bold">
+                              {perfCount} Perf
+                            </span>
+                          )}
+                          {secCount > 0 && (
+                            <span className="rounded bg-indigo-500/15 border border-indigo-500/25 px-2 py-0.5 text-[9px] text-indigo-400 font-mono font-bold">
+                              {secCount} Sec
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-4">
+                        <div className="flex flex-col items-end text-right font-mono text-[10px] text-slate-500">
+                          <span className="text-slate-400">Fecha del Review</span>
+                          <span>{new Date(rev.created_at).toLocaleDateString()}</span>
+                        </div>
+
+                        {/* Score badge */}
+                        <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-xs font-mono font-bold ${getScoreColorClass(rev.score)}`}>
+                          <span>Score: {rev.score}/10</span>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center space-x-2">
+                          <a
+                            href={rev.pr_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 rounded-lg border border-slate-800 bg-slate-950/40 text-slate-400 hover:text-white hover:border-slate-700 transition-all"
+                            title="Ver PR en GitHub"
+                          >
+                            <ExternalLink className="h-4.5 w-4.5" />
+                          </a>
+                          <button
+                            onClick={(e) => handleDeleteReview(rev.id, e)}
+                            className="p-2 rounded-lg border border-transparent text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 hover:border-rose-900/30 transition-all"
+                            title="Eliminar review"
+                          >
+                            <Trash2 className="h-4.5 w-4.5" />
+                          </button>
+                          <div className="p-2 text-slate-400">
+                            {isExpanded ? <ChevronUp className="h-4.5 w-4.5" /> : <ChevronDown className="h-4.5 w-4.5" />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detailed Review View Expanded */}
+                    {isExpanded && (
+                      <div className="border-t border-slate-800 p-6 bg-slate-950/60">
+                        <ReviewRenderer review={rev.review_content} isStreaming={false} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
