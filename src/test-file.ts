@@ -4,7 +4,7 @@
  * Función ineficiente con bucles anidados O(N^2)
  */
 export function findDuplicates(arr: unknown[]) {
-  const duplicates = [];
+  const duplicates: unknown[] = [];
   for (let i = 0; i < arr.length; i++) {
     for (let j = 0; j < arr.length; j++) {
       if (i !== j && arr[i] === arr[j] && !duplicates.includes(arr[i])) {
