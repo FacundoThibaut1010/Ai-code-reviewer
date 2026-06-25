@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { fetchUserRepos } from '@/lib/github';
 import { Repository } from '@/types';
+import { useAlert } from '@/components/AlertProvider';
 import {
   Search,
   Filter,
@@ -19,9 +20,9 @@ import {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { showAlert } = useAlert();
   const [repos, setRepos] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,7 +31,6 @@ export default function DashboardPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -40,9 +40,15 @@ export default function DashboardPage() {
 
       const token = localStorage.getItem('github_provider_token');
       if (!token) {
-        setError('Token de GitHub no encontrado. Por favor, iniciá sesión de nuevo.');
-        await supabase.auth.signOut();
-        router.replace('/');
+        showAlert({
+          type: 'error',
+          title: 'Sesión Inválida',
+          message: 'Token de GitHub no encontrado. Por favor, iniciá sesión de nuevo.',
+          onConfirm: async () => {
+            await supabase.auth.signOut();
+            router.replace('/');
+          }
+        });
         return;
       }
 
@@ -52,17 +58,27 @@ export default function DashboardPage() {
       console.error('Error fetching user repositories:', err);
       const errMessage = err instanceof Error ? err.message : '';
       if (errMessage.includes('401') || errMessage.includes('token')) {
-        setError('Tu sesión de GitHub ha expirado. Por favor, volvé a iniciar sesión.');
-        localStorage.removeItem('github_provider_token');
-        await supabase.auth.signOut();
-        router.replace('/');
+        showAlert({
+          type: 'error',
+          title: 'Sesión Expirada',
+          message: 'Tu sesión de GitHub ha expirado. Por favor, volvé a iniciar sesión.',
+          onConfirm: async () => {
+            localStorage.removeItem('github_provider_token');
+            await supabase.auth.signOut();
+            router.replace('/');
+          }
+        });
       } else {
-        setError('No se pudieron cargar los repositorios. Verificá tu conexión a internet.');
+        showAlert({
+          type: 'error',
+          title: 'Error de Carga',
+          message: 'No se pudieron cargar los repositorios. Verificá tu conexión a internet.',
+        });
       }
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, showAlert]);
 
   useEffect(() => {
     loadData();
@@ -206,17 +222,6 @@ export default function DashboardPage() {
               </div>
             </div>
           ))}
-        </div>
-      ) : error ? (
-        /* Error State */
-        <div className="flex flex-col items-center justify-center rounded-xl border border-rose-900/30 bg-rose-950/10 p-8 text-center my-6">
-          <p className="text-sm font-semibold text-rose-400">{error}</p>
-          <button
-            onClick={loadData}
-            className="mt-4 rounded-lg bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-500 transition-colors"
-          >
-            Intentar de nuevo
-          </button>
         </div>
       ) : filteredRepos.length === 0 ? (
         /* Empty State */

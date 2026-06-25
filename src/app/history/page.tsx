@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SavedReview } from '@/types';
 import ReviewRenderer from '@/components/ReviewRenderer';
+import { useAlert } from '@/components/AlertProvider';
 import {
   History,
   Search,
@@ -21,9 +22,9 @@ import {
 } from 'lucide-react';
 
 export default function HistoryPage() {
+  const { showAlert } = useAlert();
   const [reviews, setReviews] = useState<SavedReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Expanded review state (stores ID of review currently expanded)
   const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null);
@@ -35,7 +36,6 @@ export default function HistoryPage() {
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -53,11 +53,15 @@ export default function HistoryPage() {
       setReviews(data || []);
     } catch (err: unknown) {
       console.error('Error fetching review history:', err);
-      setError('No se pudo cargar el historial de reviews.');
+      showAlert({
+        type: 'error',
+        title: 'Error de Carga',
+        message: 'No se pudo cargar el historial de reviews.',
+      });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showAlert]);
 
   useEffect(() => {
     loadHistory();
@@ -73,9 +77,18 @@ export default function HistoryPage() {
 
       setReviews(reviews.filter((r) => r.id !== id));
       if (expandedReviewId === id) setExpandedReviewId(null);
+      showAlert({
+        type: 'success',
+        title: 'Review Eliminada',
+        message: 'La reseña fue eliminada correctamente de tu historial.',
+      });
     } catch (err) {
       console.error('Error deleting review:', err);
-      alert('Error al eliminar la reseña.');
+      showAlert({
+        type: 'error',
+        title: 'Error al Eliminar',
+        message: 'Error al eliminar la reseña de la base de datos.',
+      });
     }
   };
 
@@ -152,11 +165,7 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {error && (
-        <div className="mt-4 rounded-lg border border-rose-900/50 bg-rose-950/15 p-4 text-sm text-rose-400">
-          {error}
-        </div>
-      )}
+      {/* Inline errors removed, replaced by Sileo alert context */}
 
       {loading ? (
         <div className="flex flex-1 items-center justify-center p-12">
