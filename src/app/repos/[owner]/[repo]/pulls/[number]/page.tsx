@@ -22,20 +22,21 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useAlert } from '@/components/AlertProvider';
 
 export default function PRDetailsPage() {
   const params = useParams();
   const router = useRouter();
-
+  const { showAlert } = useAlert();
+ 
   const owner = params.owner as string;
   const repo = params.repo as string;
   const numberStr = params.number as string;
   const number = Number(numberStr);
-
+ 
   const [pr, setPr] = useState<PullRequest | null>(null);
   const [diffText, setDiffText] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // AI Review states
   const [isStreaming, setIsStreaming] = useState(false);
@@ -53,7 +54,6 @@ export default function PRDetailsPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -63,7 +63,12 @@ export default function PRDetailsPage() {
 
       const token = localStorage.getItem('github_provider_token');
       if (!token) {
-        setError('Token de GitHub no encontrado. Iniciá sesión de nuevo.');
+        showAlert({
+          type: 'error',
+          title: 'Sesión Inválida',
+          message: 'Token de GitHub no encontrado. Iniciá sesión de nuevo.',
+          onConfirm: () => router.replace('/'),
+        });
         return;
       }
 
@@ -95,11 +100,15 @@ export default function PRDetailsPage() {
       }
     } catch (err: unknown) {
       console.error('Error loading PR data:', err);
-      setError('Error al obtener la información de la Pull Request y su diff.');
+      showAlert({
+        type: 'error',
+        title: 'Error de Carga',
+        message: 'Error al obtener la información de la Pull Request y su diff.',
+      });
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, number, router]);
+  }, [owner, repo, number, router, showAlert]);
 
   useEffect(() => {
     if (owner && repo && number) {
@@ -111,7 +120,6 @@ export default function PRDetailsPage() {
     setIsStreaming(true);
     setReview({});
     setIsSavedInDb(false);
-    setError(null);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -201,7 +209,11 @@ export default function PRDetailsPage() {
     } catch (err: unknown) {
       console.error('Error during AI Review streaming:', err);
       const errMsg = err instanceof Error ? err.message : 'Error durante la llamada de streaming con la IA.';
-      setError(errMsg);
+      showAlert({
+        type: 'error',
+        title: 'Análisis Fallido',
+        message: errMsg,
+      });
     } finally {
       setIsStreaming(false);
     }
@@ -230,9 +242,18 @@ export default function PRDetailsPage() {
       if (dbError) throw dbError;
 
       setIsSavedInDb(true);
+      showAlert({
+        type: 'success',
+        title: 'Review Guardada',
+        message: 'La auditoría técnica del Pull Request se guardó correctamente en Supabase.',
+      });
     } catch (err: unknown) {
       console.error('Error saving review to database:', err);
-      setError('No se pudo guardar la review en la base de datos.');
+      showAlert({
+        type: 'error',
+        title: 'Error de Guardado',
+        message: 'No se pudo guardar la review en la base de datos.',
+      });
     } finally {
       setSaving(false);
     }
@@ -284,17 +305,7 @@ export default function PRDetailsPage() {
         ) : null}
       </div>
 
-      {error && (
-        <div className="mt-6 flex items-center justify-between rounded-lg border border-rose-900/50 bg-rose-950/15 p-4 text-sm text-rose-400">
-          <span>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            className="text-xs font-bold underline hover:text-rose-300"
-          >
-            Descartar
-          </button>
-        </div>
-      )}
+      {/* Inline errors removed, replaced by Sileo alert context */}
 
       {loading ? (
         <div className="flex flex-1 items-center justify-center p-12">

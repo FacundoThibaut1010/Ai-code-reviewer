@@ -17,17 +17,18 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useAlert } from '@/components/AlertProvider';
 
 export default function RepoPullRequestsPage() {
   const router = useRouter();
   const params = useParams();
+  const { showAlert } = useAlert();
   
   const owner = params.owner as string;
   const repo = params.repo as string;
 
   const [prs, setPrs] = useState<PullRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,7 +36,6 @@ export default function RepoPullRequestsPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -45,7 +45,12 @@ export default function RepoPullRequestsPage() {
 
       const token = localStorage.getItem('github_provider_token');
       if (!token) {
-        setError('Token de GitHub no encontrado. Por favor, iniciá sesión de nuevo.');
+        showAlert({
+          type: 'error',
+          title: 'Sesión Inválida',
+          message: 'Token de GitHub no encontrado. Por favor, iniciá sesión de nuevo.',
+          onConfirm: () => router.replace('/'),
+        });
         return;
       }
 
@@ -76,11 +81,15 @@ export default function RepoPullRequestsPage() {
       setPrs(mergedPRs);
     } catch (err: unknown) {
       console.error('Error loading PRs:', err);
-      setError('No se pudieron cargar las Pull Requests. Verificá tu token y la conexión.');
+      showAlert({
+        type: 'error',
+        title: 'Error de Conexión',
+        message: 'No se pudieron cargar las Pull Requests. Verificá tu token y la conexión.',
+      });
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, router]);
+  }, [owner, repo, router, showAlert]);
 
   useEffect(() => {
     if (owner && repo) {
@@ -208,17 +217,6 @@ export default function RepoPullRequestsPage() {
               <div className="h-7 bg-slate-800 rounded w-24"></div>
             </div>
           ))}
-        </div>
-      ) : error ? (
-        /* Error state */
-        <div className="flex flex-col items-center justify-center rounded-xl border border-rose-900/30 bg-rose-950/10 p-8 text-center my-6">
-          <p className="text-sm font-semibold text-rose-400">{error}</p>
-          <button
-            onClick={loadData}
-            className="mt-4 rounded-lg bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-500 transition-colors"
-          >
-            Intentar de nuevo
-          </button>
         </div>
       ) : filteredPRs.length === 0 ? (
         /* Empty State */

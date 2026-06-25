@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Terminal, Shield, Zap, History, Loader2, AlertCircle } from 'lucide-react';
+import { Terminal, Shield, Zap, History, Loader2 } from 'lucide-react';
+import { useAlert } from '@/components/AlertProvider';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -17,9 +18,9 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showAlert } = useAlert();
   const [checkingSession, setCheckingSession] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkUser() {
@@ -40,7 +41,6 @@ export default function LoginPage() {
 
   const handleGitHubLogin = async () => {
     setLoading(true);
-    setError(null);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
@@ -54,7 +54,11 @@ export default function LoginPage() {
     } catch (err: unknown) {
       console.error('Error initiating OAuth login:', err);
       const errMessage = err instanceof Error ? err.message : 'No se pudo iniciar la conexión con GitHub. Intentá nuevamente.';
-      setError(errMessage);
+      showAlert({
+        type: 'error',
+        title: 'Error de Conexión',
+        message: errMessage,
+      });
       setLoading(false);
     }
   };
@@ -131,13 +135,6 @@ export default function LoginPage() {
 
         {/* Action area */}
         <div className="space-y-4">
-          {error && (
-            <div className="flex items-center space-x-2.5 rounded-lg border border-rose-900/50 bg-rose-950/20 p-3.5 text-xs text-rose-400">
-              <AlertCircle className="h-4.5 w-4.5 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
           <button
             onClick={handleGitHubLogin}
             disabled={loading}
