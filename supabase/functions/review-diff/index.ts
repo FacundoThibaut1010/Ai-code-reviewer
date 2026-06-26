@@ -143,6 +143,9 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  let diff = '';
+  let settings: any = {};
+
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -152,7 +155,9 @@ serve(async (req) => {
       });
     }
 
-    const { diff, settings } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    diff = body.diff || '';
+    settings = body.settings || {};
 
     if (!diff) {
       return new Response(JSON.stringify({ error: 'El campo "diff" es requerido' }), {
