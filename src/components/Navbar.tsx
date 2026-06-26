@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { LogOut, History, LayoutDashboard } from 'lucide-react';
+import { LogOut, History, LayoutDashboard, Menu, X } from 'lucide-react';
 import RobotLogo from '@/components/RobotLogo';
 
 export default function Navbar() {
@@ -13,6 +13,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     async function getInitialUser() {
@@ -58,8 +59,17 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
+          {/* Logo & Mobile Menu Toggle */}
           <div className="flex items-center">
+            {/* Hamburger Button for mobile */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex md:hidden items-center justify-center p-2 mr-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-900/60 transition-colors"
+              aria-label="Toggle Menu"
+            >
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+
             <Link href="/dashboard" className="flex items-center space-x-2 group">
               <RobotLogo size={36} />
               <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent">
@@ -68,7 +78,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links (Desktop) */}
           <div className="hidden md:flex items-center space-x-1">
             <Link
               href="/dashboard"
@@ -125,6 +135,36 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Panel */}
+      {isOpen && (
+        <div className="md:hidden border-t border-slate-900 bg-slate-950 px-4 pt-2.5 pb-4 space-y-1.5 shadow-xl animate-in fade-in slide-in-from-top-4 duration-200">
+          <Link
+            href="/dashboard"
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+              pathname.startsWith('/repos') || pathname === '/dashboard'
+                ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20'
+                : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
+            }`}
+          >
+            <LayoutDashboard className="h-4.5 w-4.5" />
+            <span>Dashboard</span>
+          </Link>
+          <Link
+            href="/history"
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+              pathname === '/history'
+                ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20'
+                : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
+            }`}
+          >
+            <History className="h-4.5 w-4.5" />
+            <span>Historial</span>
+          </Link>
+        </div>
+      )}
     </nav>
   );
 }
