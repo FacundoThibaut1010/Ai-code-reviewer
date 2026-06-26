@@ -20,11 +20,43 @@ import {
   Loader2,
   ExternalLink,
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from 'recharts';
+
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { id: string; fecha: string; fullFecha: string; score: number; repo: string; pr: string } }> }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="rounded-xl border border-slate-800 bg-slate-950/95 p-3.5 shadow-xl backdrop-blur-md text-left max-w-xs">
+        <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{data.fullFecha}</p>
+        <p className="text-xs font-bold text-white mt-1.5 truncate">{data.repo}</p>
+        <p className="text-xs text-slate-300 mt-1 truncate">PR: {data.pr}</p>
+        <div className="mt-2.5 pt-2 border-t border-slate-900 flex items-center justify-between gap-5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Score de salud</span>
+          <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${
+            data.score >= 8 ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/35' :
+            data.score >= 5 ? 'bg-amber-950 text-amber-400 border border-amber-900/35' :
+            'bg-rose-950 text-rose-400 border border-rose-900/35'
+          }`}>{data.score} / 10</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function HistoryPage() {
   const { showAlert } = useAlert();
   const [reviews, setReviews] = useState<SavedReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Expanded review state (stores ID of review currently expanded)
   const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null);
@@ -33,6 +65,10 @@ export default function HistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRepo, setSelectedRepo] = useState('all');
   const [selectedDateFilter, setSelectedDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
@@ -130,9 +166,29 @@ export default function HistoryPage() {
         matchesDate = diffDays <= 30;
       }
     }
-
     return matchesSearch && matchesRepo && matchesDate;
   });
+
+  // Generate chart data chronologically
+  const chartData = [...filteredReviews]
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .map((r) => ({
+      id: r.id,
+      fecha: new Date(r.created_at).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit',
+      }),
+      fullFecha: new Date(r.created_at).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      score: r.score,
+      repo: `${r.repo_owner}/${r.repo_name}`,
+      pr: r.pr_title,
+    }));
 
   // Calculate statistics
   const totalReviews = reviews.length;
@@ -221,6 +277,54 @@ export default function HistoryPage() {
               </div>
             </div>
           </div>
+
+          {/* Line Chart showing historical scores */}
+          {isMounted && filteredReviews.length > 0 && (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/15 p-5 mb-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h4 className="text-sm font-bold text-white uppercase tracking-wider">Evolución de Score Histórico</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">Calidad y estabilidad del código a lo largo del tiempo</p>
+                </div>
+              </div>
+              <div className="w-full overflow-hidden h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.3} vertical={false} />
+                    <XAxis 
+                      dataKey="fecha" 
+                      stroke="#64748b" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      dy={8}
+                    />
+                    <YAxis 
+                      domain={[0, 10]} 
+                      ticks={[0, 2, 4, 6, 8, 10]} 
+                      stroke="#64748b" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      dx={-4}
+                    />
+                    <RechartsTooltip 
+                      content={<CustomTooltip />} 
+                      cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }} 
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="score" 
+                      stroke="#6366F1" 
+                      strokeWidth={2.5}
+                      activeDot={{ r: 6, stroke: '#818cf8', strokeWidth: 1.5, fill: '#0f172a' }}
+                      dot={{ r: 4, stroke: '#6366F1', strokeWidth: 1.5, fill: '#0f172a' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
 
           {/* Filters Area */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 mb-6">
