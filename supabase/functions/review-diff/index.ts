@@ -98,7 +98,7 @@ function generateDynamicMockReview(files: string[], settings: any) {
 }
 
 // Standalone Mock/Demo reviewer streamer
-function streamMockReview(headers: HeadersInit, diffText: string, settings: any) {
+function streamMockReview(headers: any, diffText: string, settings: any) {
   const files = extractModifiedFiles(diffText);
   const mockJson = generateDynamicMockReview(files, settings);
   const mockString = JSON.stringify(mockJson);

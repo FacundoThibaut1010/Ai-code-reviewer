@@ -24,20 +24,37 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   const showAlert = (options: AlertOptions) => {
     const { type, title, message, onConfirm } = options;
 
-    const button = onConfirm ? {
-      title: 'Confirmar',
-      onClick: () => {
-        onConfirm();
-        sileo.clear(); // Dismiss the alert immediately when confirmed
-      },
-    } : undefined;
+    // Custom ReactNode description if confirmation is required
+    const description = onConfirm ? (
+      <div className="flex flex-col gap-3 mt-1.5 text-left w-full">
+        <p className="text-xs text-slate-300 leading-relaxed">{message}</p>
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            onClick={() => {
+              onConfirm();
+              sileo.clear();
+            }}
+            className="rounded bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 text-[11px] transition-colors shadow-sm active:scale-[0.98]"
+          >
+            Confirmar
+          </button>
+          <button
+            onClick={() => {
+              sileo.clear();
+            }}
+            className="rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-3 py-1.5 text-[11px] border border-slate-700 transition-colors active:scale-[0.98]"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    ) : message;
 
     // Sileo Toast options
     const toastConfig = {
       title,
-      description: message,
-      button,
-      duration: onConfirm ? null : 2500, // Stay open if there is a confirmation button, otherwise auto-dismiss in 2.5s (faster than 4s)
+      description,
+      duration: onConfirm ? null : 1500, // Disappear faster (1.5 seconds) if not a confirmation alert
     };
 
     switch (type) {
