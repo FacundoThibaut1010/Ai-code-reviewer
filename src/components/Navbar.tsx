@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { LogOut, History, LayoutDashboard, Menu, X } from 'lucide-react';
+import { LogOut, History, LayoutDashboard, Menu, X, GitCompare } from 'lucide-react';
 import RobotLogo from '@/components/RobotLogo';
 
 export default function Navbar() {
@@ -102,6 +102,17 @@ export default function Navbar() {
               <History className="h-4 w-4" />
               <span>Historial</span>
             </Link>
+            <Link
+              href="/compare"
+              className={`flex items-center space-x-2 rounded-md px-3 h-9 text-sm font-medium transition-all ${
+                pathname === '/compare'
+                  ? 'bg-slate-800/80 text-white border border-slate-700/50'
+                  : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
+              }`}
+            >
+              <GitCompare className="h-4 w-4" />
+              <span>Comparar</span>
+            </Link>
           </div>
 
           {/* User Info / Sign Out */}
@@ -164,6 +175,18 @@ export default function Navbar() {
             >
               <History className="h-5 w-5" />
               <span>Historial</span>
+            </Link>
+            <Link
+              href="/compare"
+              onClick={() => setIsOpen(false)}
+              className={`flex items-center space-x-4 rounded-2xl px-5 py-4 text-base font-bold transition-all active:scale-[0.98] ${
+                pathname === '/compare'
+                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
+                  : 'text-slate-400 hover:bg-slate-900/60 hover:text-white border border-transparent'
+              }`}
+            >
+              <GitCompare className="h-5 w-5" />
+              <span>Comparar</span>
             </Link>
           </div>
 
