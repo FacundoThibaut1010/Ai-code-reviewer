@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Shield, Zap, History, Loader2 } from 'lucide-react';
@@ -24,9 +24,17 @@ export default function LoginPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Only show full loading progress screen if it's the very first visit in this browser session
+    const hasLoadedBefore = sessionStorage.getItem('initial_loaded');
+    if (hasLoadedBefore !== 'true') {
+      setShowProgress(true);
+      sessionStorage.setItem('initial_loaded', 'true');
+    }
+
     async function checkUser() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -45,7 +53,7 @@ export default function LoginPage() {
     checkUser();
   }, []);
 
-  const handleLoadingComplete = () => {
+  const handleLoadingComplete = useCallback(() => {
     if (isAuthenticated) {
       router.replace('/dashboard');
     } else {
@@ -61,7 +69,14 @@ export default function LoginPage() {
         });
       }
     }
-  };
+  }, [isAuthenticated, router, showAlert]);
+
+  // If sessionChecked is true and we don't show progress, complete immediately in background
+  useEffect(() => {
+    if (sessionChecked && !showProgress) {
+      handleLoadingComplete();
+    }
+  }, [sessionChecked, showProgress, handleLoadingComplete]);
 
   const handleGitHubLogin = async () => {
     setLoading(true);
@@ -87,13 +102,21 @@ export default function LoginPage() {
     }
   };
 
-  if (checkingSession) {
+  if (checkingSession && showProgress) {
     return (
       <LoadingScreen
         isDataReady={sessionChecked}
         onComplete={handleLoadingComplete}
         subtitle="Verificando sesión activa..."
       />
+    );
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 min-h-screen w-full">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+      </div>
     );
   }
 

@@ -72,7 +72,7 @@ export default function Navbar() {
 
             <Link href="/dashboard" className="flex items-center space-x-1.5 group">
               <RobotLogo size={42} />
-              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent">
+              <span className="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent whitespace-nowrap">
                 AI Code Reviewer
               </span>
             </Link>
@@ -138,31 +138,67 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="md:hidden border-t border-slate-900 bg-slate-950 px-4 pt-2.5 pb-4 space-y-1.5 shadow-xl animate-in fade-in slide-in-from-top-4 duration-200">
-          <Link
-            href="/dashboard"
-            onClick={() => setIsOpen(false)}
-            className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-              pathname.startsWith('/repos') || pathname === '/dashboard'
-                ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20'
-                : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
-            }`}
-          >
-            <LayoutDashboard className="h-4.5 w-4.5" />
-            <span>Dashboard</span>
-          </Link>
-          <Link
-            href="/history"
-            onClick={() => setIsOpen(false)}
-            className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-              pathname === '/history'
-                ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20'
-                : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
-            }`}
-          >
-            <History className="h-4.5 w-4.5" />
-            <span>Historial</span>
-          </Link>
+        <div className="fixed inset-x-0 bottom-0 top-[65px] z-50 md:hidden bg-slate-950/98 backdrop-blur-xl px-6 py-8 flex flex-col justify-between shadow-2xl animate-in fade-in slide-in-from-top-5 duration-300">
+          <div className="space-y-4">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">Navegación</p>
+            <Link
+              href="/dashboard"
+              onClick={() => setIsOpen(false)}
+              className={`flex items-center space-x-4 rounded-2xl px-5 py-4 text-base font-bold transition-all active:scale-[0.98] ${
+                pathname.startsWith('/repos') || pathname === '/dashboard'
+                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
+                  : 'text-slate-400 hover:bg-slate-900/60 hover:text-white border border-transparent'
+              }`}
+            >
+              <LayoutDashboard className="h-5 w-5" />
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              href="/history"
+              onClick={() => setIsOpen(false)}
+              className={`flex items-center space-x-4 rounded-2xl px-5 py-4 text-base font-bold transition-all active:scale-[0.98] ${
+                pathname === '/history'
+                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
+                  : 'text-slate-400 hover:bg-slate-900/60 hover:text-white border border-transparent'
+              }`}
+            >
+              <History className="h-5 w-5" />
+              <span>Historial</span>
+            </Link>
+          </div>
+
+          {/* User profile & logout at the bottom of full-screen mobile menu */}
+          {!loading && user && (
+            <div className="border-t border-slate-900 pt-6 flex flex-col gap-4">
+              <div className="flex items-center space-x-4 px-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt={user.user_metadata.full_name || 'GitHub avatar'}
+                  className="h-12 w-12 rounded-full border-2 border-indigo-500/40 shadow-md"
+                />
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-bold text-white leading-tight">
+                    {user.user_metadata.full_name || user.user_metadata.user_name}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    @{user.user_metadata.user_name}
+                  </span>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  handleSignOut();
+                }}
+                className="w-full flex items-center justify-center space-x-2.5 rounded-2xl bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 hover:text-rose-300 border border-rose-900/35 hover:border-rose-800/50 py-3.5 text-sm font-semibold transition-all active:scale-[0.98]"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </nav>
