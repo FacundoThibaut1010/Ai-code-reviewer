@@ -11,6 +11,7 @@ export interface AlertOptions {
   title: string;
   message: string;
   onConfirm?: () => void;
+  confirmText?: string;
 }
 
 interface AlertContextType {
@@ -22,12 +23,12 @@ const AlertContext = createContext<AlertContextType | undefined>(undefined);
 
 export function AlertProvider({ children }: { children: ReactNode }) {
   const showAlert = (options: AlertOptions) => {
-    const { type, title, message, onConfirm } = options;
+    const { type, title, message, onConfirm, confirmText } = options;
 
     // Custom ReactNode description if confirmation is required
     const description = onConfirm ? (
       <div className="flex flex-col gap-3 mt-1.5 text-left w-full">
-        <p className="text-xs text-slate-300 leading-relaxed">{message}</p>
+        <p className="text-xs text-black font-semibold leading-relaxed">{message}</p>
         <div className="flex items-center gap-2 pt-1">
           <button
             onClick={() => {
@@ -36,7 +37,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             }}
             className="rounded bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 text-[11px] transition-colors shadow-sm active:scale-[0.98]"
           >
-            Confirmar
+            {confirmText || 'Confirmar'}
           </button>
           <button
             onClick={() => {
@@ -55,6 +56,9 @@ export function AlertProvider({ children }: { children: ReactNode }) {
       title,
       description,
       duration: onConfirm ? null : 1500, // Disappear faster (1.5 seconds) if not a confirmation alert
+      styles: {
+        description: 'text-black font-semibold', // High contrast black text
+      }
     };
 
     switch (type) {

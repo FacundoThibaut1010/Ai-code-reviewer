@@ -74,6 +74,7 @@ export default function HistoryPage() {
       type: 'warning',
       title: '¿Eliminar Reseña?',
       message: '¿Estás seguro de que deseas eliminar esta reseña permanentemente de tu historial?',
+      confirmText: 'Eliminar',
       onConfirm: async () => {
         try {
           const { error: dbError } = await supabase.from('reviews').delete().eq('id', id);
