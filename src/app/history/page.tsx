@@ -69,27 +69,33 @@ export default function HistoryPage() {
 
   const handleDeleteReview = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Avoid triggering expand/collapse
-    if (!confirm('¿Estás seguro de que deseas eliminar esta reseña del historial?')) return;
+    
+    showAlert({
+      type: 'warning',
+      title: '¿Eliminar Reseña?',
+      message: '¿Estás seguro de que deseas eliminar esta reseña permanentemente de tu historial?',
+      onConfirm: async () => {
+        try {
+          const { error: dbError } = await supabase.from('reviews').delete().eq('id', id);
+          if (dbError) throw dbError;
 
-    try {
-      const { error: dbError } = await supabase.from('reviews').delete().eq('id', id);
-      if (dbError) throw dbError;
-
-      setReviews(reviews.filter((r) => r.id !== id));
-      if (expandedReviewId === id) setExpandedReviewId(null);
-      showAlert({
-        type: 'success',
-        title: 'Review Eliminada',
-        message: 'La reseña fue eliminada correctamente de tu historial.',
-      });
-    } catch (err) {
-      console.error('Error deleting review:', err);
-      showAlert({
-        type: 'error',
-        title: 'Error al Eliminar',
-        message: 'Error al eliminar la reseña de la base de datos.',
-      });
-    }
+          setReviews((prevReviews) => prevReviews.filter((r) => r.id !== id));
+          if (expandedReviewId === id) setExpandedReviewId(null);
+          showAlert({
+            type: 'success',
+            title: 'Review Eliminada',
+            message: 'La reseña fue eliminada correctamente de tu historial.',
+          });
+        } catch (err) {
+          console.error('Error deleting review:', err);
+          showAlert({
+            type: 'error',
+            title: 'Error al Eliminar',
+            message: 'Error al eliminar la reseña de la base de datos.',
+          });
+        }
+      }
+    });
   };
 
   // Extract unique repositories for the filter dropdown

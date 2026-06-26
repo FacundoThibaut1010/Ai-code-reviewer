@@ -26,7 +26,10 @@ export function AlertProvider({ children }: { children: ReactNode }) {
 
     const button = onConfirm ? {
       title: 'Confirmar',
-      onClick: onConfirm,
+      onClick: () => {
+        onConfirm();
+        sileo.clear(); // Dismiss the alert immediately when confirmed
+      },
     } : undefined;
 
     // Sileo Toast options
@@ -34,7 +37,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
       title,
       description: message,
       button,
-      duration: onConfirm ? null : 4000, // Stay open if there is a confirmation button, otherwise auto-dismiss in 4s
+      duration: onConfirm ? null : 2500, // Stay open if there is a confirmation button, otherwise auto-dismiss in 2.5s (faster than 4s)
     };
 
     switch (type) {
