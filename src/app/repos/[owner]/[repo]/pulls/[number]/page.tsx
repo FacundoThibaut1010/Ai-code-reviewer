@@ -121,6 +121,12 @@ export default function PRDetailsPage() {
     setReview({});
     setIsSavedInDb(false);
 
+    showAlert({
+      type: 'info',
+      title: 'Análisis Iniciado',
+      message: 'Claude 3.5 Sonnet está auditando tu Pull Request en tiempo real.',
+    });
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -205,6 +211,12 @@ export default function PRDetailsPage() {
           // Ignore final chunk errors
         }
       }
+
+      showAlert({
+        type: 'success',
+        title: 'Análisis Completado',
+        message: 'La revisión de código se completó correctamente.',
+      });
 
     } catch (err: unknown) {
       console.error('Error during AI Review streaming:', err);

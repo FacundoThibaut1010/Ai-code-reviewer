@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Terminal, Shield, Zap, History, Loader2 } from 'lucide-react';
+import { Shield, Zap, History, Loader2 } from 'lucide-react';
 import { useAlert } from '@/components/AlertProvider';
+import RobotLogo from '@/components/RobotLogo';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -30,6 +31,16 @@ export default function LoginPage() {
           router.replace('/dashboard');
         } else {
           setCheckingSession(false);
+          // Show logout alert if just logged out
+          const showLogoutToast = sessionStorage.getItem('show_logout_toast');
+          if (showLogoutToast === 'true') {
+            sessionStorage.removeItem('show_logout_toast');
+            showAlert({
+              type: 'success',
+              title: 'Sesión Cerrada',
+              message: 'Cerraste tu sesión correctamente. ¡Hasta la próxima!',
+            });
+          }
         }
       } catch (err) {
         console.error('Error checking authentication session:', err);
@@ -37,7 +48,7 @@ export default function LoginPage() {
       }
     }
     checkUser();
-  }, [router]);
+  }, [router, showAlert]);
 
   const handleGitHubLogin = async () => {
     setLoading(true);
@@ -69,7 +80,7 @@ export default function LoginPage() {
         <div className="relative flex flex-col items-center">
           <div className="absolute -inset-1 rounded-full bg-indigo-500 blur-xl opacity-30 animate-pulse"></div>
           <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 border border-slate-800 text-indigo-400">
-            <Terminal className="h-8 w-8 animate-pulse" />
+            <RobotLogo size={44} interactive={false} />
           </div>
           <Loader2 className="mt-6 h-6 w-6 animate-spin text-slate-500" />
           <span className="mt-4 text-xs font-semibold text-slate-400 uppercase tracking-widest">
@@ -89,10 +100,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Title / Brand */}
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-[0_0_30px_rgba(79,70,229,0.4)] border border-indigo-400/20">
-            <Terminal className="h-8 w-8" />
+          <div className="mb-4">
+            <RobotLogo size={72} />
           </div>
-          <h1 className="mt-6 text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
             AI Code Reviewer
           </h1>
           <p className="mt-2 text-sm text-slate-400 max-w-sm">

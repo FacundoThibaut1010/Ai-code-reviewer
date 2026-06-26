@@ -23,6 +23,7 @@ export default function AuthCallback() {
           if (session.provider_token) {
             localStorage.setItem('github_provider_token', session.provider_token);
           }
+          sessionStorage.setItem('show_login_toast', 'true');
           router.replace('/dashboard');
         }
       } catch (err) {
@@ -38,6 +39,7 @@ export default function AuthCallback() {
         if (session.provider_token) {
           localStorage.setItem('github_provider_token', session.provider_token);
         }
+        sessionStorage.setItem('show_login_toast', 'true');
         router.replace('/dashboard');
       }
     });

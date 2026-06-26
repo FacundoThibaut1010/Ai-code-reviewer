@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchUserRepos } from '@/lib/github';
 import { Repository } from '@/types';
 import { useAlert } from '@/components/AlertProvider';
+import RobotLogo from '@/components/RobotLogo';
 import {
   Search,
   Filter,
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const { showAlert } = useAlert();
   const [repos, setRepos] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState<string>('');
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +39,9 @@ export default function DashboardPage() {
         router.replace('/');
         return;
       }
+
+      const name = session.user?.user_metadata?.full_name || session.user?.user_metadata?.user_name || 'Usuario';
+      setUserName(name);
 
       const token = localStorage.getItem('github_provider_token');
       if (!token) {
@@ -54,6 +59,18 @@ export default function DashboardPage() {
 
       const fetchedRepos = await fetchUserRepos(token);
       setRepos(fetchedRepos);
+
+      // Check if we should show login toast
+      const showLoginToast = sessionStorage.getItem('show_login_toast');
+      if (showLoginToast === 'true') {
+        sessionStorage.removeItem('show_login_toast');
+        const userName = session.user?.user_metadata?.full_name || session.user?.user_metadata?.user_name || 'Usuario';
+        showAlert({
+          type: 'success',
+          title: '¡Sesión Iniciada!',
+          message: `Te damos la bienvenida, ${userName}.`,
+        });
+      }
     } catch (err: unknown) {
       console.error('Error fetching user repositories:', err);
       const errMessage = err instanceof Error ? err.message : '';
@@ -107,6 +124,15 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex-1 flex flex-col w-full">
+      {/* Welcome banner with Robot */}
+      <div className="mb-6 rounded-2xl border border-indigo-950/40 bg-indigo-950/5 p-6 shadow-md flex items-center gap-5">
+        <RobotLogo size={60} />
+        <div>
+          <h1 className="text-xl font-bold text-white">¡Hola, {userName || 'Usuario'}!</h1>
+          <p className="text-sm text-slate-400 mt-1">Seleccioná uno de tus repositorios de abajo para comenzar a auditar sus Pull Requests.</p>
+        </div>
+      </div>
+
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-900">
         <div>

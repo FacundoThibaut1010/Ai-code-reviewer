@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { LogOut, History, LayoutDashboard, Terminal } from 'lucide-react';
+import { LogOut, History, LayoutDashboard } from 'lucide-react';
+import RobotLogo from '@/components/RobotLogo';
 
 export default function Navbar() {
   const router = useRouter();
@@ -38,9 +39,14 @@ export default function Navbar() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('github_provider_token');
-    router.push('/');
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem('github_provider_token');
+      sessionStorage.setItem('show_logout_toast', 'true');
+      router.push('/');
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
   };
 
   // Do not show the navbar on the login screen
@@ -55,9 +61,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/dashboard" className="flex items-center space-x-2 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)] transition-transform group-hover:scale-105">
-                <Terminal className="h-5 w-5" />
-              </div>
+              <RobotLogo size={36} />
               <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent">
                 AI Code Reviewer
               </span>
