@@ -21,30 +21,33 @@ export default function LoadingScreen({
 
   useEffect(() => {
     let currentProgress = 0;
-    const intervalTime = 60;
+    const intervalTime = 40;
 
     const interval = setInterval(() => {
-      // If data is ready, accelerate progress. Otherwise cap at 90%
+      // If data is ready, progress smoothly to 100%. Otherwise cap at 88%
       if (isDataReady) {
-        currentProgress = Math.min(currentProgress + (Math.floor(Math.random() * 10) + 12), 100);
+        const step = Math.random() * 1.8 + 1.2; // 1.2% to 3% per tick (about 2 seconds total)
+        currentProgress = Math.min(currentProgress + step, 100);
       } else {
-        if (currentProgress < 90) {
-          currentProgress = Math.min(currentProgress + (Math.floor(Math.random() * 4) + 1), 90);
+        if (currentProgress < 88) {
+          const step = Math.random() * 0.8 + 0.4; // 0.4% to 1.2% per tick (slow loading feel)
+          currentProgress = Math.min(currentProgress + step, 88);
         }
       }
 
-      setProgress(currentProgress);
+      const intProgress = Math.floor(currentProgress);
+      setProgress(intProgress);
 
       // Dynamic tech status updates
-      if (currentProgress < 20) {
+      if (intProgress < 20) {
         setStatusText('Cargando módulos de seguridad...');
-      } else if (currentProgress < 45) {
+      } else if (intProgress < 45) {
         setStatusText('Conectando con la API de Claude 3.5 Sonnet...');
-      } else if (currentProgress < 70) {
+      } else if (intProgress < 70) {
         setStatusText('Sincronizando tokens de sesión...');
-      } else if (currentProgress < 90) {
+      } else if (intProgress < 88) {
         setStatusText('Preparando panel de control...');
-      } else if (currentProgress < 100) {
+      } else if (intProgress < 100) {
         setStatusText('Finalizando configuración...');
       } else {
         setStatusText('Sistemas listos.');
