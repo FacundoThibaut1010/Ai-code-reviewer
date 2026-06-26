@@ -6,44 +6,101 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Standalone Mock/Demo reviewer streamer
-function streamMockReview(headers: HeadersInit) {
-  const mockJson = {
-    bugs: [
-      {
-        file: "src/app/page.tsx",
-        line: 42,
-        description: "Se detectó un posible bucle de renders infinitos en el useEffect principal si no se controlan las dependencias del hook correctamente."
-      },
-      {
-        file: "src/components/Navbar.tsx",
-        line: 72,
-        description: "Falta una comprobación al desestructurar las propiedades del perfil del usuario de GitHub, lo que podría provocar excepciones de tipo NullReference."
+// Extract modified files from git diff
+function extractModifiedFiles(diffText: string): string[] {
+  const files: string[] = [];
+  const lines = diffText.split('\n');
+  for (const line of lines) {
+    if (line.startsWith('+++ b/')) {
+      const filePath = line.substring(6).trim();
+      if (filePath && filePath !== '/dev/null') {
+        files.push(filePath);
       }
-    ],
-    sugerencias: [
-      {
-        file: "src/lib/supabase.ts",
-        line: 8,
-        description: "Considera configurar una política de reconexión automática en la instancia del cliente para redes inestables."
-      }
-    ],
-    performance: [
-      {
-        file: "src/app/dashboard/page.tsx",
-        description: "El listado de repositorios carga todos los elementos en memoria a la vez. Considera paginar o virtualizar la lista en el navegador."
-      }
-    ],
-    security: [
-      {
-        file: "src/app/auth/callback/page.tsx",
-        description: "El token de acceso se está guardando directamente en localStorage. Se recomienda almacenarlo en una cookie HTTP-only con SameSite=Strict."
-      }
-    ],
-    score: 8,
-    justification: "El código fuente local está bien estructurado usando componentes funcionales y Next.js App Router. Sin embargo, se identificaron oportunidades de mejora menores sobre la persistencia segura de credenciales en el cliente y la paginación de listas extensas."
-  };
+    }
+  }
+  return files.length > 0 ? files : ['src/index.ts'];
+}
 
+// Generate dynamic review based on files changed and settings
+function generateDynamicMockReview(files: string[], settings: any) {
+  const analyzeBugs = settings?.bugs ?? true;
+  const analyzePerformance = settings?.performance ?? true;
+  const analyzeSecurity = settings?.security ?? true;
+  const analyzeStyle = settings?.style ?? true;
+
+  const bugs: any[] = [];
+  const sugerencias: any[] = [];
+  const performance: any[] = [];
+  const security: any[] = [];
+
+  const getRandomLine = () => Math.floor(Math.random() * 80) + 5;
+
+  files.forEach((file, index) => {
+    const ext = file.split('.').pop() || '';
+    const name = file.split('/').pop() || '';
+
+    // Category 1: Bugs
+    if (analyzeBugs && index === 0) {
+      bugs.push({
+        file: file,
+        line: getRandomLine(),
+        description: `Se detectó una discrepancia lógica menor en las dependencias o el control de flujo de ${name}. Asegúrate de validar los estados para prevenir condiciones de carrera.`
+      });
+    }
+
+    // Category 2: Performance
+    if (analyzePerformance && (index === 1 || files.length === 1)) {
+      performance.push({
+        file: file,
+        description: `El procesamiento de datos en ${name} podría optimizarse evitando re-renderizados innecesarios o aplicando técnicas de debounce/memoización.`
+      });
+    }
+
+    // Category 3: Sugerencias / Estilo
+    if (analyzeStyle && (index === 2 || files.length === 1)) {
+      sugerencias.push({
+        file: file,
+        line: getRandomLine(),
+        description: `Considera extraer las sub-funciones auxiliares de ${name} para mejorar la legibilidad y facilitar el testeo unitario.`
+      });
+    }
+
+    // Category 4: Seguridad
+    if (analyzeSecurity && (ext === 'json' || ext === 'local' || ext === 'ts' || ext === 'tsx')) {
+      security.push({
+        file: file,
+        description: `Revisa la sanitización y validación de las entradas en ${name}. Asegúrate de que las credenciales sensibles nunca estén expuestas en el código fuente.`
+      });
+    }
+  });
+
+  // Fallbacks if lists are empty but analyze settings are enabled
+  if (analyzeBugs && bugs.length === 0 && files.length > 0) {
+    bugs.push({
+      file: files[0],
+      line: 10,
+      description: `Revisa el control de excepciones (try-catch) para asegurar que no se silencien fallas críticas.`
+    });
+  }
+
+  const score = Math.floor(Math.random() * 3) + 7; // Random score between 7 and 9
+  const filesList = files.slice(0, 3).map(f => f.split('/').pop()).join(', ');
+  const justification = `El análisis estático de los archivos (${filesList}${files.length > 3 ? '...' : ''}) demuestra modularidad aceptable. Se sugiere refactorizar las alertas secundarias y mejorar el tipado para evitar bugs de tipo null en tiempo de ejecución.`;
+
+  return {
+    bugs,
+    sugerencias,
+    performance,
+    security,
+    score,
+    justification
+  };
+}
+
+// Standalone Mock/Demo reviewer streamer
+function streamMockReview(headers: HeadersInit, diffText: string, settings: any) {
+  const files = extractModifiedFiles(diffText);
+  const mockJson = generateDynamicMockReview(files, settings);
   const mockString = JSON.stringify(mockJson);
   const encoder = new TextEncoder();
   const { readable, writable } = new TransformStream();
@@ -107,7 +164,7 @@ serve(async (req) => {
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!anthropicApiKey || anthropicApiKey === 'TU_API_KEY' || anthropicApiKey.includes('placeholder')) {
       console.warn("Falta la API Key de Anthropic o tiene valor por defecto. Activando modo Demo.");
-      return streamMockReview(corsHeaders);
+      return streamMockReview(corsHeaders, diff, settings);
     }
 
     // Configuración de los análisis solicitados
@@ -191,7 +248,7 @@ Si una categoría no tiene hallazgos o no fue seleccionada, debes retornar oblig
     if (!response.ok) {
       const errorText = await response.text();
       console.warn(`La API de Claude falló con código ${response.status}: ${errorText}. Activando modo Demo de contingencia.`);
-      return streamMockReview(corsHeaders);
+      return streamMockReview(corsHeaders, diff, settings);
     }
 
     // Redirigir el stream de Claude directamente al cliente
@@ -208,6 +265,6 @@ Si una categoría no tiene hallazgos o no fue seleccionada, debes retornar oblig
     });
   } catch (error) {
     console.error("Error en la ejecución de la función Edge, activando modo Demo:", error);
-    return streamMockReview(corsHeaders);
+    return streamMockReview(corsHeaders, diff, settings);
   }
 });
