@@ -1,21 +1,28 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function AuthCallback() {
   const router = useRouter();
+  const [dataReady, setDataReady] = useState(false);
+  const [nextPath, setNextPath] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+
     async function handleAuthCallback() {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error in callback session retrieval:', error);
-          router.push('/');
+          if (active) {
+            setNextPath('/');
+            setDataReady(true);
+          }
           return;
         }
 
@@ -24,11 +31,17 @@ export default function AuthCallback() {
             localStorage.setItem('github_provider_token', session.provider_token);
           }
           sessionStorage.setItem('show_login_toast', 'true');
-          router.replace('/dashboard');
+          if (active) {
+            setNextPath('/dashboard');
+            setDataReady(true);
+          }
         }
       } catch (err) {
         console.error('Failed to handle auth callback:', err);
-        router.replace('/');
+        if (active) {
+          setNextPath('/');
+          setDataReady(true);
+        }
       }
     }
 
@@ -40,29 +53,38 @@ export default function AuthCallback() {
           localStorage.setItem('github_provider_token', session.provider_token);
         }
         sessionStorage.setItem('show_login_toast', 'true');
-        router.replace('/dashboard');
+        if (active) {
+          setNextPath('/dashboard');
+          setDataReady(true);
+        }
       }
     });
 
-    // Fallback: si no se obtiene sesión en 10 segundos, redirigir al login
+    // Fallback: si no se obtiene sesión en 8 segundos, redirigir al login
     const timeout = setTimeout(() => {
-      router.replace('/');
-    }, 10000);
+      if (active) {
+        setNextPath('/');
+        setDataReady(true);
+      }
+    }, 8000);
 
     return () => {
+      active = false;
       subscription.unsubscribe();
       clearTimeout(timeout);
     };
-  }, [router]);
+  }, []);
+
+  const handleLoadingComplete = () => {
+    router.replace(nextPath || '/');
+  };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 p-6 text-center">
-      <div className="relative flex flex-col items-center">
-        <div className="absolute -inset-1 rounded-full bg-indigo-500/20 blur-xl opacity-40 animate-pulse"></div>
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
-      </div>
-      <h2 className="mt-4 text-sm font-semibold text-slate-300">Autenticando con GitHub...</h2>
-      <p className="mt-1 text-xs text-slate-500">Configurando tu entorno de revisión.</p>
-    </div>
+    <LoadingScreen
+      isDataReady={dataReady}
+      onComplete={handleLoadingComplete}
+      title="Autenticando con GitHub"
+      subtitle="Vinculando credenciales de desarrollador y preparando tu entorno..."
+    />
   );
 }

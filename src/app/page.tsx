@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Shield, Zap, History, Loader2 } from 'lucide-react';
 import { useAlert } from '@/components/AlertProvider';
 import RobotLogo from '@/components/RobotLogo';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -21,6 +22,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { showAlert } = useAlert();
   const [checkingSession, setCheckingSession] = useState(true);
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -28,27 +31,37 @@ export default function LoginPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          router.replace('/dashboard');
+          setIsAuthenticated(true);
         } else {
-          setCheckingSession(false);
-          // Show logout alert if just logged out
-          const showLogoutToast = sessionStorage.getItem('show_logout_toast');
-          if (showLogoutToast === 'true') {
-            sessionStorage.removeItem('show_logout_toast');
-            showAlert({
-              type: 'success',
-              title: 'Sesión Cerrada',
-              message: 'Cerraste tu sesión correctamente. ¡Hasta la próxima!',
-            });
-          }
+          setIsAuthenticated(false);
         }
       } catch (err) {
         console.error('Error checking authentication session:', err);
-        setCheckingSession(false);
+        setIsAuthenticated(false);
+      } finally {
+        setSessionChecked(true);
       }
     }
     checkUser();
-  }, [router, showAlert]);
+  }, []);
+
+  const handleLoadingComplete = () => {
+    if (isAuthenticated) {
+      router.replace('/dashboard');
+    } else {
+      setCheckingSession(false);
+      // Show logout alert if just logged out
+      const showLogoutToast = sessionStorage.getItem('show_logout_toast');
+      if (showLogoutToast === 'true') {
+        sessionStorage.removeItem('show_logout_toast');
+        showAlert({
+          type: 'success',
+          title: 'Sesión Cerrada',
+          message: 'Cerraste tu sesión correctamente. ¡Hasta la próxima!',
+        });
+      }
+    }
+  };
 
   const handleGitHubLogin = async () => {
     setLoading(true);
@@ -76,18 +89,11 @@ export default function LoginPage() {
 
   if (checkingSession) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-slate-950 p-6">
-        <div className="relative flex flex-col items-center">
-          <div className="absolute -inset-1 rounded-full bg-indigo-500 blur-xl opacity-30 animate-pulse"></div>
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 border border-slate-800 text-indigo-400">
-            <RobotLogo size={44} interactive={false} />
-          </div>
-          <Loader2 className="mt-6 h-6 w-6 animate-spin text-slate-500" />
-          <span className="mt-4 text-xs font-semibold text-slate-400 uppercase tracking-widest">
-            Cargando sesión...
-          </span>
-        </div>
-      </div>
+      <LoadingScreen
+        isDataReady={sessionChecked}
+        onComplete={handleLoadingComplete}
+        subtitle="Verificando sesión activa..."
+      />
     );
   }
 
