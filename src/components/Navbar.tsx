@@ -70,8 +70,8 @@ export default function Navbar() {
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
 
-            <Link href="/dashboard" className="flex items-center space-x-2 group">
-              <RobotLogo size={36} />
+            <Link href="/dashboard" className="flex items-center space-x-1.5 group">
+              <RobotLogo size={42} />
               <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent">
                 AI Code Reviewer
               </span>

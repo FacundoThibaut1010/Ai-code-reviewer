@@ -125,8 +125,8 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex-1 flex flex-col w-full">
       {/* Welcome banner with Robot */}
-      <div className="mb-6 rounded-2xl border border-indigo-950/40 bg-indigo-950/5 p-6 shadow-md flex items-center gap-5">
-        <RobotLogo size={60} />
+      <div className="mb-6 rounded-2xl border border-indigo-950/40 bg-indigo-950/5 p-6 shadow-md flex items-center gap-4">
+        <RobotLogo size={68} />
         <div>
           <h1 className="text-xl font-bold text-white">¡Hola, {userName || 'Usuario'}!</h1>
           <p className="text-sm text-slate-400 mt-1">Seleccioná uno de tus repositorios de abajo para comenzar a auditar sus Pull Requests.</p>

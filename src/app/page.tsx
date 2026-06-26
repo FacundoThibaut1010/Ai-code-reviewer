@@ -100,10 +100,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Title / Brand */}
         <div className="flex flex-col items-center text-center">
-          <div className="mb-4">
-            <RobotLogo size={72} />
+          <div className="mb-2">
+            <RobotLogo size={96} />
           </div>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+          <h1 className="mt-1 text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
             AI Code Reviewer
           </h1>
           <p className="mt-2 text-sm text-slate-400 max-w-sm">
