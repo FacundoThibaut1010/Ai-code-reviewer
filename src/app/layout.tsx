@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'AI Code Reviewer - Análisis Automático de Código',
   description:
     'Obtené revisiones de código automáticas generadas por IA de tus repositorios y Pull Requests de GitHub.',
+  icons: {
+    icon: '/icon.png',
+  },
 };
 
 export default function RootLayout({
