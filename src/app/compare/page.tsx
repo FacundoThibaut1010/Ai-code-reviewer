@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import { SavedReview } from '@/types';
 import { useAlert } from '@/components/AlertProvider';
 import { GitCompare, ArrowLeftRight, AlertTriangle, ShieldAlert, Award, FileText } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 
 export default function ComparePage() {
   const { showAlert } = useAlert();
@@ -123,8 +122,6 @@ export default function ComparePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-white">
-      <Navbar />
-      
       <main className="flex-1 flex flex-col w-full">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex-1 flex flex-col w-full">
           {/* Header */}
