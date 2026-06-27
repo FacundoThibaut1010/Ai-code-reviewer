@@ -56,7 +56,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-slate-800 bg-slate-950">
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-800 bg-slate-950" style={{ backgroundColor: '#020617' }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo & Mobile Menu Toggle */}
@@ -149,7 +149,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="fixed inset-x-0 bottom-0 top-[65px] z-50 md:hidden bg-slate-950 px-6 py-8 flex flex-col justify-between shadow-2xl animate-in fade-in slide-in-from-top-5 duration-300">
+        <div className="fixed inset-x-0 bottom-0 top-[65px] z-50 md:hidden bg-slate-950 px-6 py-8 flex flex-col justify-between shadow-2xl animate-in fade-in slide-in-from-top-5 duration-300" style={{ backgroundColor: '#020617' }}>
           <div className="space-y-4">
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">Navegación</p>
             <Link
