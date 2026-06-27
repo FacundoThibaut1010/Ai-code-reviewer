@@ -8,6 +8,7 @@ import { parsePartialJson } from '@/lib/json-repair';
 import { PullRequest, AIReviewContent, ReviewSettings } from '@/types';
 import DiffViewer from '@/components/DiffViewer';
 import ReviewRenderer from '@/components/ReviewRenderer';
+import PRChat from '@/components/PRChat';
 import {
   ArrowLeft,
   Settings,
@@ -479,6 +480,10 @@ export default function PRDetailsPage() {
             {/* AI Review Output Renderer */}
             {(Object.keys(review).length > 0 || isStreaming) && (
               <ReviewRenderer review={review} isStreaming={isStreaming} />
+            )}
+
+            {Object.keys(review).length > 0 && !isStreaming && (
+              <PRChat diffText={diffText} review={review as AIReviewContent} />
             )}
 
           </div>
