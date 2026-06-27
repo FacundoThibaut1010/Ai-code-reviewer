@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { SavedReview } from '@/types';
 import { useAlert } from '@/components/AlertProvider';
 import { GitCompare, ArrowLeftRight, AlertTriangle, ShieldAlert, Award, FileText } from 'lucide-react';
+import CustomSelect from '@/components/CustomSelect';
 
 export default function ComparePage() {
   const { showAlert } = useAlert();
@@ -151,21 +152,21 @@ export default function ComparePage() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                       Primer Review (PR A)
                     </label>
-                    <select
+                    <CustomSelect
                       value={selectedId1}
-                      onChange={(e) => {
-                        setSelectedId1(e.target.value);
+                      onChange={(val) => {
+                        setSelectedId1(val);
                         setShowComparison(false);
                       }}
-                      className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-3 px-4 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    >
-                      <option value="">Seleccionar review...</option>
-                      {reviews.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          [{r.repo_name}] {r.pr_title} ({new Date(r.created_at).toLocaleDateString()})
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: '', label: 'Seleccionar review...' },
+                        ...reviews.map((r) => ({
+                          value: r.id,
+                          label: `[${r.repo_name}] ${r.pr_title} (${new Date(r.created_at).toLocaleDateString()})`
+                        }))
+                      ]}
+                      icon={GitCompare}
+                    />
                   </div>
 
                   {/* Select 2 */}
@@ -173,21 +174,21 @@ export default function ComparePage() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                       Segundo Review (PR B)
                     </label>
-                    <select
+                    <CustomSelect
                       value={selectedId2}
-                      onChange={(e) => {
-                        setSelectedId2(e.target.value);
+                      onChange={(val) => {
+                        setSelectedId2(val);
                         setShowComparison(false);
                       }}
-                      className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-3 px-4 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    >
-                      <option value="">Seleccionar review...</option>
-                      {reviews.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          [{r.repo_name}] {r.pr_title} ({new Date(r.created_at).toLocaleDateString()})
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: '', label: 'Seleccionar review...' },
+                        ...reviews.map((r) => ({
+                          value: r.id,
+                          label: `[${r.repo_name}] ${r.pr_title} (${new Date(r.created_at).toLocaleDateString()})`
+                        }))
+                      ]}
+                      icon={GitCompare}
+                    />
                   </div>
                 </div>
 

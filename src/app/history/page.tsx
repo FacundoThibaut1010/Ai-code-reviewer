@@ -29,18 +29,19 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
+import CustomSelect from '@/components/CustomSelect';
 
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { id: string; fecha: string; fullFecha: string; score: number; repo: string; pr: string } }> }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="rounded-xl border border-slate-800 bg-slate-950/95 p-3.5 shadow-xl backdrop-blur-md text-left max-w-xs">
-        <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{data.fullFecha}</p>
-        <p className="text-xs font-bold text-white mt-1.5 truncate">{data.repo}</p>
-        <p className="text-xs text-slate-300 mt-1 truncate">PR: {data.pr}</p>
-        <div className="mt-2.5 pt-2 border-t border-slate-900 flex items-center justify-between gap-5">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Score de salud</span>
-          <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${
+      <div className="rounded-xl border border-slate-800 bg-slate-950/95 p-2 sm:p-3.5 shadow-xl backdrop-blur-md text-left max-w-[180px] sm:max-w-xs select-none pointer-events-none">
+        <p className="text-[8px] sm:text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{data.fullFecha}</p>
+        <p className="text-[10px] sm:text-xs font-bold text-white mt-1 truncate max-w-[160px] sm:max-w-none">{data.repo}</p>
+        <p className="hidden sm:block text-xs text-slate-300 mt-1 truncate">PR: {data.pr}</p>
+        <div className="mt-1.5 sm:mt-2.5 pt-1.5 sm:pt-2 border-t border-slate-900 flex items-center justify-between gap-3 sm:gap-5">
+          <span className="text-[8px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest">Score</span>
+          <span className={`text-[10px] sm:text-xs font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded ${
             data.score >= 8 ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/35' :
             data.score >= 5 ? 'bg-amber-950 text-amber-400 border border-amber-900/35' :
             'bg-rose-950 text-rose-400 border border-rose-900/35'
@@ -343,45 +344,31 @@ export default function HistoryPage() {
             </div>
 
             {/* Repo filter */}
-            <div className="relative md:col-span-3">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Filter className="h-4 w-4 text-slate-500" />
-              </div>
-              <select
+            <div className="md:col-span-3">
+              <CustomSelect
                 value={selectedRepo}
-                onChange={(e) => setSelectedRepo(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-10 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value="all">Todos los repos</option>
-                {uniqueRepos.map((repo) => (
-                  <option key={repo} value={repo}>
-                    {repo}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
-                <ChevronDown className="h-4 w-4" />
-              </div>
+                onChange={setSelectedRepo}
+                options={[
+                  { value: 'all', label: 'Todos los repos' },
+                  ...uniqueRepos.map((repo) => ({ value: repo, label: repo })),
+                ]}
+                icon={Filter}
+              />
             </div>
 
             {/* Date filter */}
-            <div className="relative md:col-span-3">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Calendar className="h-4 w-4 text-slate-500" />
-              </div>
-              <select
+            <div className="md:col-span-3">
+              <CustomSelect
                 value={selectedDateFilter}
-                onChange={(e) => setSelectedDateFilter(e.target.value as 'all' | 'today' | 'week' | 'month')}
-                className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-10 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value="all">Cualquier fecha</option>
-                <option value="today">Hoy</option>
-                <option value="week">Últimos 7 días</option>
-                <option value="month">Últimos 30 días</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
-                <ChevronDown className="h-4 w-4" />
-              </div>
+                onChange={(val) => setSelectedDateFilter(val as 'all' | 'today' | 'week' | 'month')}
+                options={[
+                  { value: 'all', label: 'Cualquier fecha' },
+                  { value: 'today', label: 'Hoy' },
+                  { value: 'week', label: 'Últimos 7 días' },
+                  { value: 'month', label: 'Últimos 30 días' },
+                ]}
+                icon={Calendar}
+              />
             </div>
           </div>
 

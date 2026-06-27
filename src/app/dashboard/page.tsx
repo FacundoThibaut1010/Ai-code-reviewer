@@ -7,6 +7,7 @@ import { fetchUserRepos } from '@/lib/github';
 import { Repository } from '@/types';
 import { useAlert } from '@/components/AlertProvider';
 import RobotLogo from '@/components/RobotLogo';
+import CustomSelect from '@/components/CustomSelect';
 import {
   Search,
   Filter,
@@ -15,7 +16,6 @@ import {
   Lock,
   Globe,
   FolderGit,
-  ChevronRight,
   RefreshCw,
 } from 'lucide-react';
 
@@ -173,25 +173,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Language Filter */}
-        <div className="relative md:col-span-3">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Filter className="h-4 w-4 text-slate-500" />
-          </div>
-          <select
+        <div className="md:col-span-3">
+          <CustomSelect
             value={selectedLanguage}
-            onChange={(e) => setSelectedLanguage(e.target.value)}
-            className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-10 text-sm text-slate-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="all">Todos los lenguajes</option>
-            {uniqueLanguages.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
-            <ChevronRight className="h-4 w-4 rotate-90" />
-          </div>
+            onChange={setSelectedLanguage}
+            options={[
+              { value: 'all', label: 'Todos los lenguajes' },
+              ...uniqueLanguages.map((lang) => ({ value: lang, label: lang })),
+            ]}
+            icon={Filter}
+          />
         </div>
 
         {/* Type Filter */}
