@@ -7,52 +7,86 @@ const corsHeaders = {
 };
 
 // Standalone Mock/Demo project analysis response streamer
-function streamMockAnalysis(headers: any, repoName: string, description: string, files: string[], languages: any) {
+function streamMockAnalysis(
+  headers: any,
+  repoName: string,
+  description: string,
+  files: string[],
+  languages: any,
+  commits: any[],
+  fileContents: Record<string, string>
+) {
   const name = repoName.split('/').pop() || repoName;
-  const cleanName = name.replace(/[-_]/g, ' ');
+  const cleanName = name.replace(/[-_]/g, ' ').toUpperCase();
+  const repoDesc = description || 'un proyecto de desarrollo de software interactivo';
+
+  // Buscar el contenido del README
+  let readmeText = '';
+  if (fileContents) {
+    const readmeKey = Object.keys(fileContents).find(k => k.toLowerCase() === 'readme.md');
+    if (readmeKey && fileContents[readmeKey]) {
+      readmeText = fileContents[readmeKey];
+    }
+  }
+
+  // Extraer un resumen del README
+  let parsedObjective = '';
+  if (readmeText) {
+    // Buscar líneas de texto que no sean headers, imágenes o links
+    const lines = readmeText.split('\n');
+    const paragraphs: string[] = [];
+    for (const line of lines) {
+      const cleanLine = line.trim();
+      if (!cleanLine) continue;
+      if (cleanLine.startsWith('#') || cleanLine.startsWith('!') || cleanLine.startsWith('[') || cleanLine.startsWith('---') || cleanLine.startsWith('*')) {
+        continue;
+      }
+      paragraphs.push(cleanLine);
+      if (paragraphs.length >= 3) break;
+    }
+    parsedObjective = paragraphs.join(' ');
+  }
+
+  // Si no hay README, buscar en los commits recientes
+  let commitSummary = '';
+  if (!parsedObjective && commits && commits.length > 0) {
+    const messages = commits
+      .map(c => c.commit?.message || '')
+      .filter(m => m && !m.startsWith('Merge') && !m.startsWith('Branch'))
+      .slice(0, 3);
+    if (messages.length > 0) {
+      commitSummary = `El desarrollo reciente incluye: ${messages.join(', ')}.`;
+    }
+  }
+
+  // Construir las descripciones dinámicamente
+  const inferredDesc = parsedObjective 
+    ? (parsedObjective.length > 300 ? parsedObjective.substring(0, 300) + '...' : parsedObjective)
+    : `${repoDesc}. ${commitSummary}`;
+
+  // Determinar tipo de proyecto basándonos en los archivos
   const filesStr = (files || []).join(' ');
   const isEcommerce = /store|shop|cart|product|checkout|tienda|compra|vender/i.test(filesStr) || /store|shop|cart|tienda|ecommerce/i.test(name);
   const isPortfolio = /portfolio|cv|resume|about|portafolio/i.test(filesStr) || /portfolio|portafolio/i.test(name);
   const isChat = /chat|message|socket|canal|convers/i.test(filesStr) || /chat/i.test(name);
   const isTask = /task|todo|list|kanban|agenda|calendar/i.test(filesStr) || /todo|task/i.test(name);
 
-  let projectType = 'desarrollo de software';
-  let problemSolved = 'optimizar la gestión de datos y mejorar la experiencia de usuario';
-  let concreteAction = 'permitir al usuario interactuar de manera fluida y gestionar información esencial en tiempo real';
-  let targetUser = 'usuarios finales y administradores que buscan agilidad en sus operaciones diarias';
+  let projectType = 'solución de software';
+  if (isEcommerce) projectType = 'plataforma de comercio electrónico (E-commerce)';
+  else if (isPortfolio) projectType = 'portafolio web profesional';
+  else if (isChat) projectType = 'sistema de mensajería en tiempo real';
+  else if (isTask) projectType = 'aplicación de productividad y gestión de tareas';
 
-  if (isEcommerce) {
-    projectType = 'comercio electrónico (E-commerce)';
-    problemSolved = 'facilitar la compra y venta de productos en línea de manera segura, reduciendo la fricción en el proceso de pago';
-    concreteAction = 'navegar por un catálogo interactivo de productos, gestionar un carrito de compras dinámico y realizar transacciones de pago';
-    targetUser = 'clientes finales que buscan una experiencia de compra fluida y vendedores que necesitan administrar su inventario';
-  } else if (isPortfolio) {
-    projectType = 'portafolio profesional';
-    problemSolved = 'centralizar y presentar de manera visual y atractiva los proyectos de software, habilidades técnicas e historial laboral del desarrollador';
-    concreteAction = 'visualizar una lista de trabajos realizados con filtros dinámicos, conocer la experiencia técnica del desarrollador y contactarlo directamente';
-    targetUser = 'reclutadores, clientes freelance y la comunidad técnica que busca conocer el perfil y capacidades del profesional';
-  } else if (isChat) {
-    projectType = 'mensajería y comunicación en tiempo real';
-    problemSolved = 'conectar a personas de manera instantánea superando las barreras de comunicación tradicionales';
-    concreteAction = 'enviar y recibir mensajes instantáneos en salas de chat grupales o directas, con indicadores de estado de conexión';
-    targetUser = 'equipos de trabajo o comunidades que necesitan coordinarse rápidamente sin demoras';
-  } else if (isTask) {
-    projectType = 'gestión de tareas y productividad';
-    problemSolved = 'organizar y priorizar las actividades diarias para reducir la dispersión mental y aumentar la productividad';
-    concreteAction = 'crear, editar, clasificar y marcar como completadas las tareas cotidianas mediante tableros organizadores';
-    targetUser = 'profesionales y estudiantes que buscan una forma estructurada de administrar sus tiempos y entregables';
-  }
-
-  const langs = Object.keys(languages || {}).slice(0, 3).join(', ') || 'JavaScript';
+  const langs = Object.keys(languages || {}).slice(0, 3).join(', ') || 'TypeScript/JavaScript';
 
   const responseText = `### LINKEDIN
-He desarrollado ${cleanName.trim()}, una aplicación web de ${projectType} que resuelve el problema de ${problemSolved}. El sistema permite a los usuarios ${concreteAction}, aportando eficiencia y agilidad en sus tareas cotidianas. Estoy muy conforme con el diseño responsivo y la robustez lógica alcanzada con tecnologías modernas.
+He completado el desarrollo de **${cleanName}**, una ${projectType} diseñada para ${repoDesc.toLowerCase()}. El proyecto está estructurado para resolver problemáticas de productividad y optimización de datos, facilitando a los usuarios realizar operaciones esenciales de manera rápida. La aplicación destaca por su diseño responsivo y la modularidad de sus componentes en ${langs}.
 
 ### CV
-Desarrollo de ${cleanName.trim()}, plataforma de ${projectType} para ${problemSolved}. Permite la interacción directa mediante un flujo optimizado que facilita al usuario ${concreteAction}.
+Desarrollo de **${cleanName}**, ${projectType} orientada a ${repoDesc.toLowerCase()}. Implementa un flujo interactivo que permite agilizar la gestión de datos mediante código robusto y modular.
 
 ### PORTFOLIO
-Este proyecto consiste en una aplicación de ${projectType} diseñada específicamente para ${problemSolved}, brindando una experiencia rápida y simplificada. Desde el punto de vista del usuario final, la herramienta ofrece un panel interactivo para ${concreteAction}. La arquitectura modular del código facilita la integración con APIs externas y optimiza los tiempos de respuesta del sistema, haciéndolo ideal para ${targetUser}. El proyecto fue desarrollado utilizando prácticas de código limpio y estructurado en lenguajes como ${langs}.`;
+**${cleanName}** es una ${projectType} que surge para resolver la ineficiencia en procesos tradicionales. A través del análisis del repositorio, se observa que la aplicación implementa funcionalidades clave descritas como: "${inferredDesc}". Con este enfoque, el usuario final obtiene un entorno interactivo y simplificado para operar. A nivel de arquitectura, se optó por un desarrollo con ${langs}, logrando modularidad en las vistas y optimización de carga.`;
 
   const encoder = new TextEncoder();
   const { readable, writable } = new TransformStream();
@@ -129,7 +163,7 @@ serve(async (req) => {
     const grokApiKey = Deno.env.get('GROK_API_KEY');
     if (!grokApiKey || grokApiKey === 'TU_API_KEY' || grokApiKey.includes('placeholder')) {
       console.warn("Falta la API Key de Grok o tiene valor por defecto. Activando modo Demo para analizar proyecto.");
-      return streamMockAnalysis(corsHeaders, repoName, description, files, languages);
+      return streamMockAnalysis(corsHeaders, repoName, description, files, languages, commits, fileContents);
     }
 
     // Crear el prompt del sistema dinámico
@@ -192,7 +226,7 @@ Debes generar tres versiones de descripción del proyecto claramente identificad
     if (!response.ok) {
       const errorText = await response.text();
       console.warn(`La API de Grok falló con código ${response.status}: ${errorText}. Activando modo Demo de contingencia.`);
-      return streamMockAnalysis(corsHeaders, repoName, description, files, languages);
+      return streamMockAnalysis(corsHeaders, repoName, description, files, languages, commits, fileContents);
     }
 
     // Transformar el stream de Grok al formato esperado por el frontend (Anthropic content_block_delta)
@@ -283,6 +317,6 @@ Debes generar tres versiones de descripción del proyecto claramente identificad
     });
   } catch (error) {
     console.error("Error en la ejecución de la función Edge, activando modo Demo:", error);
-    return streamMockAnalysis(corsHeaders, repoName, description, files, languages);
+    return streamMockAnalysis(corsHeaders, repoName, description, files, languages, commits, fileContents);
   }
 });
