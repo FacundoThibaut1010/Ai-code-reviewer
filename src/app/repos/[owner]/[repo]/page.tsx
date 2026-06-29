@@ -87,10 +87,28 @@ export default function RepoPullRequestsPage() {
       const nextConfigPath = filesList.find(f => f.startsWith('next.config'));
       const tsConfigPath = filesList.find(f => f === 'tsconfig.json');
       
-      const mainCodeFiles = filesList.filter(f => 
-        (f.startsWith('src/') || f.startsWith('lib/') || f.startsWith('app/')) && 
-        (f.endsWith('.tsx') || f.endsWith('.ts') || f.endsWith('.js') || f.endsWith('.go') || f.endsWith('.py'))
-      ).slice(0, 3);
+      // Filtro inteligente de archivos de código fuente principales
+      const excludedDirs = ['node_modules/', '.git/', '.next/', 'dist/', 'build/', 'vendor/'];
+      const mainCodeFiles = filesList.filter(f => {
+        // Excluir directorios pesados/autogenerados
+        const isExcluded = excludedDirs.some(dir => f.includes(dir));
+        if (isExcluded) return false;
+
+        // Comprobar extensiones de código más comunes
+        const hasCodeExt = f.endsWith('.tsx') || 
+                           f.endsWith('.ts') || 
+                           f.endsWith('.js') || 
+                           f.endsWith('.jsx') ||
+                           f.endsWith('.php') || 
+                           f.endsWith('.py') || 
+                           f.endsWith('.go') || 
+                           f.endsWith('.java') || 
+                           f.endsWith('.rb') || 
+                           f.endsWith('.html') || 
+                           f.endsWith('.css');
+        
+        return hasCodeExt;
+      }).slice(0, 5); // Tomamos hasta 5 archivos principales
 
       const pathsToFetch = [
         readmePath,
@@ -139,7 +157,8 @@ export default function RepoPullRequestsPage() {
       }
 
       const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
 
       if (!reader) {
         throw new Error('No se pudo establecer el canal de streaming.');
@@ -149,10 +168,16 @@ export default function RepoPullRequestsPage() {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        
+        // Mantener la última línea incompleta en el búfer
+        buffer = lines.pop() || '';
+
         for (const line of lines) {
           const trimmed = line.trim();
+          if (!trimmed) continue;
+
           if (trimmed.startsWith('data:')) {
             const dataStr = trimmed.substring(5).trim();
             if (dataStr === '[DONE]') continue;
@@ -167,6 +192,20 @@ export default function RepoPullRequestsPage() {
               // Ignore partial JSON
             }
           }
+        }
+      }
+
+      // Procesar remanente del búfer al finalizar
+      if (buffer.trim().startsWith('data:')) {
+        try {
+          const dataStr = buffer.trim().substring(5).trim();
+          const parsed = JSON.parse(dataStr);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            const text = parsed.delta.text;
+            setProjectAnalysis((prev) => prev + text);
+          }
+        } catch {
+          // Ignore
         }
       }
     } catch (err) {

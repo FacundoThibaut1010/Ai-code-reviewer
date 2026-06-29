@@ -125,7 +125,7 @@ export default function PRDetailsPage() {
     showAlert({
       type: 'info',
       title: 'Análisis Iniciado',
-      message: 'Claude 3.5 Sonnet está auditando tu Pull Request en tiempo real.',
+      message: 'Grok 3 está auditando tu Pull Request en tiempo real.',
     });
 
     try {

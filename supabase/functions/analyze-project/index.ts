@@ -7,16 +7,52 @@ const corsHeaders = {
 };
 
 // Standalone Mock/Demo project analysis response streamer
-function streamMockAnalysis(headers: any, repoName: string, description: string) {
-  const repoDesc = description || 'un sistema interactivo de desarrollo de software';
+function streamMockAnalysis(headers: any, repoName: string, description: string, files: string[], languages: any) {
+  const name = repoName.split('/').pop() || repoName;
+  const cleanName = name.replace(/[-_]/g, ' ');
+  const filesStr = (files || []).join(' ');
+  const isEcommerce = /store|shop|cart|product|checkout|tienda|compra|vender/i.test(filesStr) || /store|shop|cart|tienda|ecommerce/i.test(name);
+  const isPortfolio = /portfolio|cv|resume|about|portafolio/i.test(filesStr) || /portfolio|portafolio/i.test(name);
+  const isChat = /chat|message|socket|canal|convers/i.test(filesStr) || /chat/i.test(name);
+  const isTask = /task|todo|list|kanban|agenda|calendar/i.test(filesStr) || /todo|task/i.test(name);
+
+  let projectType = 'desarrollo de software';
+  let problemSolved = 'optimizar la gestión de datos y mejorar la experiencia de usuario';
+  let concreteAction = 'permitir al usuario interactuar de manera fluida y gestionar información esencial en tiempo real';
+  let targetUser = 'usuarios finales y administradores que buscan agilidad en sus operaciones diarias';
+
+  if (isEcommerce) {
+    projectType = 'comercio electrónico (E-commerce)';
+    problemSolved = 'facilitar la compra y venta de productos en línea de manera segura, reduciendo la fricción en el proceso de pago';
+    concreteAction = 'navegar por un catálogo interactivo de productos, gestionar un carrito de compras dinámico y realizar transacciones de pago';
+    targetUser = 'clientes finales que buscan una experiencia de compra fluida y vendedores que necesitan administrar su inventario';
+  } else if (isPortfolio) {
+    projectType = 'portafolio profesional';
+    problemSolved = 'centralizar y presentar de manera visual y atractiva los proyectos de software, habilidades técnicas e historial laboral del desarrollador';
+    concreteAction = 'visualizar una lista de trabajos realizados con filtros dinámicos, conocer la experiencia técnica del desarrollador y contactarlo directamente';
+    targetUser = 'reclutadores, clientes freelance y la comunidad técnica que busca conocer el perfil y capacidades del profesional';
+  } else if (isChat) {
+    projectType = 'mensajería y comunicación en tiempo real';
+    problemSolved = 'conectar a personas de manera instantánea superando las barreras de comunicación tradicionales';
+    concreteAction = 'enviar y recibir mensajes instantáneos en salas de chat grupales o directas, con indicadores de estado de conexión';
+    targetUser = 'equipos de trabajo o comunidades que necesitan coordinarse rápidamente sin demoras';
+  } else if (isTask) {
+    projectType = 'gestión de tareas y productividad';
+    problemSolved = 'organizar y priorizar las actividades diarias para reducir la dispersión mental y aumentar la productividad';
+    concreteAction = 'crear, editar, clasificar y marcar como completadas las tareas cotidianas mediante tableros organizadores';
+    targetUser = 'profesionales y estudiantes que buscan una forma estructurada de administrar sus tiempos y entregables';
+  }
+
+  const langs = Object.keys(languages || {}).slice(0, 3).join(', ') || 'JavaScript';
+
   const responseText = `### LINKEDIN
-He desarrollado un sistema interactivo diseñado para optimizar el flujo de trabajo de auditoría de código en equipos de desarrollo. La plataforma ayuda a identificar ineficiencias de manera temprana, reduciendo significativamente el tiempo de revisión manual y mejorando la calidad final del software entregado. Al automatizar la detección de inconsistencias y sugerir mejoras, permitimos que los desarrolladores se enfoquen en resolver problemas de negocio complejos.
+He desarrollado ${cleanName.trim()}, una aplicación web de ${projectType} que resuelve el problema de ${problemSolved}. El sistema permite a los usuarios ${concreteAction}, aportando eficiencia y agilidad en sus tareas cotidianas. Estoy muy conforme con el diseño responsivo y la robustez lógica alcanzada con tecnologías modernas.
 
 ### CV
-Plataforma web de auditoría inteligente que optimiza los flujos de revisión de código de repositorios. Automatiza el diagnóstico de fallas de lógica, estilo y rendimiento, reduciendo los tiempos de entrega y elevando la calidad técnica del software en producción.
+Desarrollo de ${cleanName.trim()}, plataforma de ${projectType} para ${problemSolved}. Permite la interacción directa mediante un flujo optimizado que facilita al usuario ${concreteAction}.
 
 ### PORTFOLIO
-Este proyecto nace para resolver la ineficiencia y fatiga mental asociadas con la revisión manual de Pull Requests en equipos de desarrollo ágiles. La aplicación proporciona un panel interactivo que lee directamente el código de los repositorios y ofrece diagnósticos inmediatos sobre fallas de seguridad, rendimiento y adherencia a buenas prácticas. Desde la perspectiva del usuario, basta con seleccionar una propuesta de cambio para recibir un reporte claro con soluciones aplicables paso a paso y la posibilidad de chatear en vivo con un asistente inteligente para refactorizar el código en el acto. Esto no solo acelera los tiempos de despliegue, sino que actúa como una herramienta pedagógica para que los desarrolladores aprendan mejores patrones de diseño en cada interacción.`;
+Este proyecto consiste en una aplicación de ${projectType} diseñada específicamente para ${problemSolved}, brindando una experiencia rápida y simplificada. Desde el punto de vista del usuario final, la herramienta ofrece un panel interactivo para ${concreteAction}. La arquitectura modular del código facilita la integración con APIs externas y optimiza los tiempos de respuesta del sistema, haciéndolo ideal para ${targetUser}. El proyecto fue desarrollado utilizando prácticas de código limpio y estructurado en lenguajes como ${langs}.`;
 
   const encoder = new TextEncoder();
   const { readable, writable } = new TransformStream();
@@ -93,7 +129,7 @@ serve(async (req) => {
     const grokApiKey = Deno.env.get('GROK_API_KEY');
     if (!grokApiKey || grokApiKey === 'TU_API_KEY' || grokApiKey.includes('placeholder')) {
       console.warn("Falta la API Key de Grok o tiene valor por defecto. Activando modo Demo para analizar proyecto.");
-      return streamMockAnalysis(corsHeaders, repoName, description);
+      return streamMockAnalysis(corsHeaders, repoName, description, files, languages);
     }
 
     // Crear el prompt del sistema dinámico
@@ -133,6 +169,9 @@ Debes generar tres versiones de descripción del proyecto claramente identificad
       }))
     };
 
+    // Loguear el contexto exacto enviado a Grok antes de la llamada
+    console.log("Contexto exacto enviado a Grok:", JSON.stringify(repoContext, null, 2));
+
     // Llamada a la API de Grok con Streaming
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -153,7 +192,7 @@ Debes generar tres versiones de descripción del proyecto claramente identificad
     if (!response.ok) {
       const errorText = await response.text();
       console.warn(`La API de Grok falló con código ${response.status}: ${errorText}. Activando modo Demo de contingencia.`);
-      return streamMockAnalysis(corsHeaders, repoName, description);
+      return streamMockAnalysis(corsHeaders, repoName, description, files, languages);
     }
 
     // Transformar el stream de Grok al formato esperado por el frontend (Anthropic content_block_delta)
@@ -244,6 +283,6 @@ Debes generar tres versiones de descripción del proyecto claramente identificad
     });
   } catch (error) {
     console.error("Error en la ejecución de la función Edge, activando modo Demo:", error);
-    return streamMockAnalysis(corsHeaders, repoName, description);
+    return streamMockAnalysis(corsHeaders, repoName, description, files, languages);
   }
 });
