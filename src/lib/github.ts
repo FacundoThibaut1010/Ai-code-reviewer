@@ -78,3 +78,65 @@ export async function fetchPullRequestDiff(
 
   return response.text();
 }
+
+export async function fetchRepoDetails(token: string, owner: string, repo: string): Promise<{ default_branch?: string; description?: string }> {
+  const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}`, {
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error fetching repository details: ${response.status} - ${errorText}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchRepoLanguages(token: string, owner: string, repo: string): Promise<Record<string, number>> {
+  const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/languages`, {
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) return {};
+  return response.json();
+}
+
+export async function fetchRepoCommits(token: string, owner: string, repo: string): Promise<unknown[]> {
+  const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/commits?per_page=5`, {
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) return [];
+  return response.json();
+}
+
+export async function fetchRepoTree(token: string, owner: string, repo: string, branch: string): Promise<{ tree: Array<{ path: string; type: string }> }> {
+  const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, {
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error fetching repository tree: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchFileContent(token: string, owner: string, repo: string, path: string): Promise<string> {
+  const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/contents/${path}`, {
+    headers: getHeaders(token),
+  });
+
+  if (!response.ok) return '';
+  const data = await response.json();
+  if (data.encoding === 'base64' && data.content) {
+    try {
+      // Deno/Browser compatible atob, removing whitespace/newlines
+      return atob(data.content.replace(/\s/g, ''));
+    } catch {
+      return '';
+    }
+  }
+  return '';
+}
+
