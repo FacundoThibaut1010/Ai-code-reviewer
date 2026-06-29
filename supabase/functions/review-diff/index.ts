@@ -166,9 +166,9 @@ serve(async (req) => {
       });
     }
 
-    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!anthropicApiKey || anthropicApiKey === 'TU_API_KEY' || anthropicApiKey.includes('placeholder')) {
-      console.warn("Falta la API Key de Anthropic o tiene valor por defecto. Activando modo Demo.");
+    const grokApiKey = Deno.env.get('GROK_API_KEY');
+    if (!grokApiKey || grokApiKey === 'TU_API_KEY' || grokApiKey.includes('placeholder')) {
+      console.warn("Falta la API Key de Grok o tiene valor por defecto. Activando modo Demo.");
       return streamMockReview(corsHeaders, diff, settings);
     }
 
@@ -228,23 +228,18 @@ Estructura exacta del JSON esperado:
 
 Si una categoría no tiene hallazgos o no fue seleccionada, debes retornar obligatoriamente un array vacío [].`;
 
-    // Llamada a la API de Anthropic Claude con Streaming
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Llamada a la API de Grok con Streaming
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${grokApiKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 4000,
-        system: systemPrompt,
+        model: 'grok-3',
         messages: [
-          {
-            role: 'user',
-            content: `Aquí está el diff de la Pull Request:\n\n${diff}`,
-          },
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Aquí está el diff de la Pull Request:\n\n${diff}` },
         ],
         stream: true,
       }),
@@ -252,13 +247,87 @@ Si una categoría no tiene hallazgos o no fue seleccionada, debes retornar oblig
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.warn(`La API de Claude falló con código ${response.status}: ${errorText}. Activando modo Demo de contingencia.`);
+      console.warn(`La API de Grok falló con código ${response.status}: ${errorText}. Activando modo Demo de contingencia.`);
       return streamMockReview(corsHeaders, diff, settings);
     }
 
-    // Redirigir el stream de Claude directamente al cliente
+    // Transformar el stream de Grok al formato esperado por el frontend (Anthropic content_block_delta)
     const { readable, writable } = new TransformStream();
-    response.body?.pipeTo(writable);
+    const writer = writable.getWriter();
+    const reader = response.body?.getReader();
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    (async () => {
+      let buffer = '';
+      try {
+        if (!reader) {
+          await writer.close();
+          return;
+        }
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            if (trimmed.startsWith('data:')) {
+              const dataStr = trimmed.substring(5).trim();
+              if (dataStr === '[DONE]') {
+                await writer.write(encoder.encode('data: [DONE]\n\n'));
+                continue;
+              }
+
+              try {
+                const parsed = JSON.parse(dataStr);
+                const content = parsed.choices?.[0]?.delta?.content || '';
+                if (content) {
+                  const sseData = `data: ${JSON.stringify({
+                    type: 'content_block_delta',
+                    delta: { text: content }
+                  })}\n\n`;
+                  await writer.write(encoder.encode(sseData));
+                }
+              } catch {
+                // Ignore partial JSON parsing errors
+              }
+            }
+          }
+        }
+
+        // Process leftover buffer
+        if (buffer.trim().startsWith('data:')) {
+          const trimmed = buffer.trim();
+          const dataStr = trimmed.substring(5).trim();
+          if (dataStr !== '[DONE]') {
+            try {
+              const parsed = JSON.parse(dataStr);
+              const content = parsed.choices?.[0]?.delta?.content || '';
+              if (content) {
+                const sseData = `data: ${JSON.stringify({
+                  type: 'content_block_delta',
+                  delta: { text: content }
+                })}\n\n`;
+                await writer.write(encoder.encode(sseData));
+              }
+            } catch {
+              // Ignore
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error transforming Grok stream:', err);
+      } finally {
+        await writer.close();
+      }
+    })();
 
     return new Response(readable, {
       headers: {
