@@ -121,27 +121,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex flex-1 flex-col items-center justify-center bg-slate-950 px-4 py-12 sm:px-6 lg:px-8 overflow-hidden">
+    <div className="relative flex flex-1 flex-col items-center justify-center bg-slate-950 px-4 py-6 sm:py-12 sm:px-6 lg:px-8 overflow-hidden">
       {/* Background glow effects */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] rounded-full bg-violet-600/10 blur-[100px] pointer-events-none"></div>
 
-      <div className="w-full max-w-md space-y-8 relative z-10">
+      <div className="w-full max-w-md space-y-5 sm:space-y-8 relative z-10">
         {/* Title / Brand */}
         <div className="flex flex-col items-center text-center">
           <div className="mb-2">
-            <RobotLogo size={96} />
+            <RobotLogo size={80} />
           </div>
-          <h1 className="mt-1 text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
             AI Code Reviewer
           </h1>
-          <p className="mt-2 text-sm text-slate-400 max-w-sm">
+          <p className="mt-1.5 text-xs sm:text-sm text-slate-400 max-w-sm">
             Audita tus pull requests y analiza tus proyectos de GitHub en segundos con Gemini.
           </p>
         </div>
 
         {/* Feature Highlights */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-6 space-y-4 shadow-xl">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-4.5 sm:p-6 space-y-3.5 sm:space-y-4 shadow-xl">
           <div className="flex items-start space-x-3.5">
             <div className="mt-0.5 rounded-lg bg-indigo-500/15 p-1.5 text-indigo-400 border border-indigo-500/20">
               <Zap className="h-4 w-4" />
