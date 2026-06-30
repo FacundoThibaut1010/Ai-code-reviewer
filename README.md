@@ -4,7 +4,7 @@ Herramienta web que conecta tu cuenta de GitHub via OAuth, analiza los cambios d
 
 Desarrollado por **Facundo Thibaut** como challenge técnico para **AranguriApps**.
 
-🔗 [Ver demo en vivo](https://ai-code-reviewer-ten-mu.vercel.app/)
+🔗 [Ver en vivo](https://ai-code-reviewer-ten-mu.vercel.app/)
 
 ---
 

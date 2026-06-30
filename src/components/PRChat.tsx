@@ -317,13 +317,13 @@ export default function PRChat({ diffText, review }: PRChatProps) {
           </div>
         </div>
 
-        <div className="p-4 md:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 bg-slate-950/20">
+        <div className="p-4 md:p-6 space-y-4 overflow-y-auto overflow-x-hidden custom-scrollbar flex-1 bg-slate-950/20">
           {messages.map((msg, index) => {
             const isAssistant = msg.role === 'assistant';
             return (
               <div
                 key={index}
-                className={`flex items-start gap-3 max-w-[85%] ${
+                className={`flex items-start gap-3 max-w-[85%] min-w-0 ${
                   isAssistant ? 'mr-auto text-left' : 'ml-auto flex-row-reverse text-left'
                 }`}
               >
@@ -350,7 +350,7 @@ export default function PRChat({ diffText, review }: PRChatProps) {
                 </div>
 
                 <div
-                  className={`rounded-2xl px-4 py-3 text-sm shadow-sm border ${
+                  className={`rounded-2xl px-4 py-3 text-sm shadow-sm border min-w-0 break-words ${
                     isAssistant
                       ? 'bg-slate-900/60 border-slate-800/80 text-slate-350 rounded-tl-sm font-sans'
                       : 'bg-indigo-600/10 border-indigo-500/20 text-indigo-100 rounded-tr-sm font-sans'
