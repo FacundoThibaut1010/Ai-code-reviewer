@@ -332,4 +332,57 @@ body {
   border-color: #cbd5e1 !important;
 }
 
+/* Light mode macOS chat header styling override */
+.light .bg-slate-950\/80 {
+  background-color: #e2e8f0 !important; /* light gray macOS style title bar */
+  border-color: #cbd5e1 !important;
+}
+
+.light .bg-slate-950\/80 span {
+  color: #0f172a !important; /* dark text for title */
+}
+
+/* Modal container body style */
+.light .bg-slate-900 {
+  background-color: #f8fafc !important; /* clean light body background */
+  border-color: #cbd5e1 !important;
+}
+
+.light .bg-slate-900 p,
+.light .bg-slate-900 span {
+  color: #334155 !important;
+}
+
+.light .bg-slate-900\/60 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light .bg-slate-900\/60 p,
+.light .bg-slate-900\/60 span {
+  color: #334155 !important;
+}
+
+/* PR state list item icon container overrides in light mode */
+.light .bg-emerald-950\/30 {
+  background-color: #d1fae5 !important;
+  border-color: #a7f3d0 !important;
+  color: #065f46 !important;
+}
+
+.light .bg-emerald-950\/30 svg {
+  color: #059669 !important;
+}
+
+.light .bg-rose-950\/30 {
+  background-color: #fee2e2 !important;
+  border-color: #fecaca !important;
+  color: #991b1b !important;
+}
+
+.light .bg-rose-950\/30 svg {
+  color: #dc2626 !important;
+}
+
+
 

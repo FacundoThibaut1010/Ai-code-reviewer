@@ -29,7 +29,22 @@ export default function PRChat({ diffText, review }: PRChatProps) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function fetchAvatar() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.user_metadata?.avatar_url) {
+          setAvatarUrl(session.user.user_metadata.avatar_url);
+        }
+      } catch (e) {
+        console.error('Error fetching avatar:', e);
+      }
+    }
+    fetchAvatar();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -258,12 +273,12 @@ export default function PRChat({ diffText, review }: PRChatProps) {
           {/* Backdrop Blur overlay */}
           <div 
             onClick={() => setChatOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] animate-in fade-in duration-200"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] animate-in fade-in duration-200"
           />
 
           {/* Modal Container */}
           <div 
-            className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-2xl flex flex-col z-[100] transition-all duration-300 ease-out animate-sileo-pop ${
+            className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-2xl flex flex-col z-[10000] transition-all duration-300 ease-out animate-sileo-pop ${
               isMaximized 
                 ? 'w-[90vw] max-w-4xl h-[80vh]' 
                 : 'w-[90vw] max-w-lg h-[520px]'
@@ -334,6 +349,12 @@ export default function PRChat({ diffText, review }: PRChatProps) {
                         <div className="text-indigo-400 scale-90">
                           <RobotLogo size={20} interactive={false} />
                         </div>
+                      ) : avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt="Usuario"
+                          className="h-full w-full rounded-lg object-cover"
+                        />
                       ) : (
                         <User className="h-4 w-4" />
                       )}
