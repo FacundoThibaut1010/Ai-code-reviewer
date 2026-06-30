@@ -33,7 +33,8 @@ export default function ComparePage() {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setReviews(data || []);
+        const prReviews = (data || []).filter((r) => r.pr_number > 0);
+        setReviews(prReviews);
       } catch (err) {
         console.error('Error loading reviews for comparison:', err);
         showAlert({

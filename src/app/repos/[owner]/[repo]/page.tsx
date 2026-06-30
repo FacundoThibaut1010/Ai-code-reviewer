@@ -450,7 +450,9 @@ export default function RepoPullRequestsPage() {
               <h2 className="text-xl font-bold tracking-tight text-white font-mono">{repo}</h2>
             </div>
             <p className="text-sm text-slate-400 mt-1">
-              Seleccioná una Pull Request para ver su diff e iniciar una revisión técnica.
+              {activeTab === 'prs'
+                ? 'Seleccioná una Pull Request para ver su diff e iniciar una revisión técnica.'
+                : 'Generá una ficha ejecutiva y descripciones de tu proyecto adaptadas para tu portfolio, CV y LinkedIn.'}
             </p>
           </div>
           <button

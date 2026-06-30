@@ -131,7 +131,8 @@ export default function DashboardPage() {
         </div>
         <div>
           <h1 className="text-2xl font-extrabold text-white">¡Hola, {userName || 'Usuario'}!</h1>
-          <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">Seleccioná uno de tus repositorios de abajo para comenzar a auditar sus Pull Requests.</p>
+          <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">Elegí un repositorio para revisar sus Pull Requests con IA o generar una descripción profesional del proyecto.
+          </p>
         </div>
       </div>
 
@@ -189,31 +190,28 @@ export default function DashboardPage() {
         <div className="flex rounded-lg border border-slate-800 bg-slate-950/50 p-1 md:col-span-3 text-xs font-semibold">
           <button
             onClick={() => setSelectedType('all')}
-            className={`flex-1 rounded px-3 py-1.5 transition-colors ${
-              selectedType === 'all'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            className={`flex-1 rounded px-3 py-1.5 transition-colors ${selectedType === 'all'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-white'
+              }`}
           >
             Todos
           </button>
           <button
             onClick={() => setSelectedType('public')}
-            className={`flex-1 rounded px-3 py-1.5 transition-colors ${
-              selectedType === 'public'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            className={`flex-1 rounded px-3 py-1.5 transition-colors ${selectedType === 'public'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-white'
+              }`}
           >
             Públicos
           </button>
           <button
             onClick={() => setSelectedType('private')}
-            className={`flex-1 rounded px-3 py-1.5 transition-colors ${
-              selectedType === 'private'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            className={`flex-1 rounded px-3 py-1.5 transition-colors ${selectedType === 'private'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-white'
+              }`}
           >
             Privados
           </button>
@@ -264,11 +262,10 @@ export default function DashboardPage() {
                   <h3 className="text-sm font-bold text-slate-200 group-hover:text-indigo-400 font-mono transition-colors truncate">
                     {repo.name}
                   </h3>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${
-                    repo.private
-                      ? 'bg-rose-950/20 text-rose-400 border-rose-900/30'
-                      : 'bg-indigo-950/20 text-indigo-400 border-indigo-900/30'
-                  }`}>
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${repo.private
+                    ? 'bg-rose-950/20 text-rose-400 border-rose-900/30'
+                    : 'bg-indigo-950/20 text-indigo-400 border-indigo-900/30'
+                    }`}>
                     {repo.private ? (
                       <Lock className="h-2.5 w-2.5 mr-1" />
                     ) : (
