@@ -223,33 +223,50 @@ export default function RepoPullRequestsPage() {
   };
 
   const parseAnalysisSections = (text: string) => {
-    const linkedinIndex = text.indexOf('### LINKEDIN');
-    const cvIndex = text.indexOf('### CV');
-    const portfolioIndex = text.indexOf('### PORTFOLIO');
+    const linkedinRegex = /###\s*LINKE?D\s*IN/i;
+    const cvRegex = /###\s*(CV|CURRICULUM|CURRÍCULUM)/i;
+    const portfolioRegex = /###\s*(PORTFOLIO|PORTAFOLIO)/i;
+
+    const linkedinMatch = text.match(linkedinRegex);
+    const cvMatch = text.match(cvRegex);
+    const portfolioMatch = text.match(portfolioRegex);
+
+    const linkedinIndex = linkedinMatch ? text.indexOf(linkedinMatch[0]) : -1;
+    const cvIndex = cvMatch ? text.indexOf(cvMatch[0]) : -1;
+    const portfolioIndex = portfolioMatch ? text.indexOf(portfolioMatch[0]) : -1;
 
     let linkedin = '';
     let cv = '';
     let portfolio = '';
 
     if (linkedinIndex !== -1) {
-      const start = linkedinIndex + '### LINKEDIN'.length;
+      const start = linkedinIndex + linkedinMatch![0].length;
       const end = cvIndex !== -1 ? cvIndex : (portfolioIndex !== -1 ? portfolioIndex : text.length);
       linkedin = text.substring(start, end).trim();
     }
 
     if (cvIndex !== -1) {
-      const start = cvIndex + '### CV'.length;
+      const start = cvIndex + cvMatch![0].length;
       const end = portfolioIndex !== -1 ? portfolioIndex : text.length;
       cv = text.substring(start, end).trim();
     }
 
     if (portfolioIndex !== -1) {
-      const start = portfolioIndex + '### PORTFOLIO'.length;
+      const start = portfolioIndex + portfolioMatch![0].length;
       const end = text.length;
       portfolio = text.substring(start, end).trim();
     }
 
-    // Fallbacks
+    const cleanSection = (s: string) => {
+      let cleaned = s.trim();
+      if (cleaned.startsWith(':')) cleaned = cleaned.substring(1).trim();
+      return cleaned;
+    };
+
+    linkedin = cleanSection(linkedin);
+    cv = cleanSection(cv);
+    portfolio = cleanSection(portfolio);
+
     if (!linkedin && !cv && !portfolio) {
       portfolio = text;
     }
