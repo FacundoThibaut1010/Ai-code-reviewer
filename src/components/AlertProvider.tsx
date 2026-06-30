@@ -25,7 +25,6 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   const showAlert = (options: AlertOptions) => {
     const { type, title, message, onConfirm, confirmText } = options;
 
-    // Custom ReactNode description if confirmation is required
     const description = onConfirm ? (
       <div className="flex flex-col gap-3 mt-1.5 text-left w-full">
         <p className="text-xs text-black font-semibold leading-relaxed">{message}</p>
@@ -51,13 +50,12 @@ export function AlertProvider({ children }: { children: ReactNode }) {
       </div>
     ) : message;
 
-    // Sileo Toast options
     const toastConfig = {
       title,
       description,
-      duration: onConfirm ? null : 1500, // Disappear faster (1.5 seconds) if not a confirmation alert
+      duration: onConfirm ? null : 1500,
       styles: {
-        description: 'text-black font-semibold', // High contrast black text
+        description: 'text-black font-semibold',
       }
     };
 

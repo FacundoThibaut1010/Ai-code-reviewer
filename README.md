@@ -17,8 +17,8 @@ Desarrollado por **Facundo Thibaut** como challenge técnico para **AranguriApps
 | Sileo | Toast notifications con spring physics y SVG morphing |
 | Supabase Auth | Login con GitHub OAuth |
 | Supabase Database + RLS | Guardado de reviews con seguridad por usuario |
-| Supabase Edge Functions | Llamada segura a la API de Grok (xAI) desde el servidor |
-| Grok (xAI) API | Análisis de código y descripción de proyectos con el modelo `grok-3` en streaming |
+| Supabase Edge Functions | Llamada segura a la API de Gemini desde el servidor |
+| Gemini API | Análisis de código y descripción de proyectos con el modelo `gemini-1.5-pro` en streaming |
 | GitHub REST API v3 | Obtención de repos, PRs, diffs y archivos fuente |
 | Jest | Unit tests |
 | GitHub Actions | CI/CD automático en cada push |
@@ -31,10 +31,10 @@ Desarrollado por **Facundo Thibaut** como challenge técnico para **AranguriApps
 Permite combinar componentes server-side y client-side en el mismo proyecto, ideal para manejar el streaming de la IA desde el servidor y la UI interactiva en el cliente.
 
 **¿Por qué Supabase?**
-Resuelve de forma elegante tres problemas a la vez: autenticación OAuth con GitHub, base de datos con seguridad por usuario via RLS, y Edge Functions para llamar a la API de Grok de forma segura sin exponer la API key en el frontend.
+Resuelve de forma elegante tres problemas a la vez: autenticación OAuth con GitHub, base de datos con seguridad por usuario via RLS, y Edge Functions para llamar a la API de Gemini de forma segura sin exponer la API key en el frontend.
 
-**¿Por qué Edge Functions para llamar a Grok (xAI)?**
-La API key de Grok nunca sale del servidor. La Edge Function valida el JWT del usuario, realiza la petición a `https://api.x.ai/v1/chat/completions` y redirige el stream directamente al cliente sin acumular la respuesta completa en memoria.
+**¿Por qué Edge Functions para llamar a Gemini (Google)?**
+La API key de Gemini nunca sale del servidor. La Edge Function valida el JWT del usuario, realiza la petición a los servicios de Google AI y redirige el stream directamente al cliente sin acumular la respuesta completa en memoria.
 
 **¿Por qué streaming?**
 El análisis de un PR o de un repositorio completo puede tardar varios segundos. Con streaming, el usuario ve el análisis aparecer palabra por palabra en tiempo real, en lugar de esperar con una pantalla bloqueada o en blanco.
@@ -68,7 +68,7 @@ Todo el código generado fue revisado, probado y ajustado manualmente antes de i
 - Node.js v18 o v20
 - Cuenta en Supabase
 - GitHub OAuth App configurada
-- API Key de Grok (xAI)
+- API Key de Gemini
 
 ### Instalación
 
@@ -85,10 +85,10 @@ NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
 ```
 
-Configurá la API key de Grok en Supabase:
+Configurá la API key de Gemini en Supabase:
 
 ```bash
-supabase secrets set GROK_API_KEY="tu-api-key"
+supabase secrets set GEMINI_API_KEY="tu-api-key"
 ```
 
 Corré el proyecto:

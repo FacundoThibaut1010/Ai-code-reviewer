@@ -9,7 +9,6 @@ export default function ThemeToggle() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Read theme from localStorage or document class
     const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
     const initialTheme = savedTheme || 'dark';
     

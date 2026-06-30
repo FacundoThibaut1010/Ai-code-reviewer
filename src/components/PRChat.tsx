@@ -80,14 +80,12 @@ export default function PRChat({ diffText, review }: PRChatProps) {
     setInputValue('');
     setIsStreaming(true);
 
-    // Agregar mensaje del usuario
     const updatedMessages: ChatMessage[] = [
       ...messages,
       { role: 'user', content: userMessageContent },
     ];
     setMessages(updatedMessages);
 
-    // Agregar mensaje vacío del asistente que se llenará con streaming
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
     setTimeout(scrollToBottom, 50);
 
@@ -134,7 +132,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
 
-        // Mantener la última línea incompleta en el búfer
         buffer = lines.pop() || '';
 
         for (const line of lines) {
@@ -161,13 +158,11 @@ export default function PRChat({ diffText, review }: PRChatProps) {
                 });
               }
             } catch {
-              // Ignorar errores parciales de parseo
             }
           }
         }
       }
 
-      // Procesar último fragmento residual si queda algo en buffer
       if (buffer.trim().startsWith('data:')) {
         try {
           const dataStr = buffer.trim().substring(5).trim();
@@ -185,9 +180,7 @@ export default function PRChat({ diffText, review }: PRChatProps) {
               return copy;
             });
           }
-        } catch {
-          // Ignorar
-        }
+        } catch {}
       }
 
     } catch (err: unknown) {
@@ -199,7 +192,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
         message: errMsg,
       });
 
-      // Remover el mensaje vacío del asistente si falló
       setMessages((prev) => {
         const copy = [...prev];
         if (copy.length > 0 && copy[copy.length - 1].content === '') {
@@ -223,7 +215,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
       );
     }
 
-    // Dividir por bloques de código: ```
     const parts = content.split(/(```[\s\S]*?```)/g);
 
     return parts.map((part, index) => {
@@ -292,9 +283,7 @@ export default function PRChat({ diffText, review }: PRChatProps) {
       >
         {/* macOS Title Bar */}
         <div className="px-4 py-3 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between select-none shrink-0 relative">
-          {/* Traffic Light Circles (macOS style) */}
           <div className="flex items-center space-x-2 z-10">
-            {/* Red: Close */}
             <button 
               onClick={() => setChatOpen(false)}
               className="h-3 w-3 rounded-full bg-rose-500 hover:bg-rose-600 transition-colors flex items-center justify-center group"
@@ -302,7 +291,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
             >
               <span className="text-[8px] text-rose-950 font-bold opacity-0 group-hover:opacity-100 transition-opacity">×</span>
             </button>
-            {/* Yellow: Minimize/Close to button */}
             <button 
               onClick={() => setChatOpen(false)}
               className="h-3 w-3 rounded-full bg-amber-500 hover:bg-amber-600 transition-colors flex items-center justify-center group"
@@ -310,7 +298,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
             >
               <span className="text-[8px] text-amber-950 font-bold opacity-0 group-hover:opacity-100 transition-opacity">-</span>
             </button>
-            {/* Green: Toggle size */}
             <button 
               onClick={() => setIsMaximized(!isMaximized)}
               className="h-3 w-3 rounded-full bg-emerald-500 hover:bg-emerald-600 transition-colors flex items-center justify-center group"
@@ -320,19 +307,16 @@ export default function PRChat({ diffText, review }: PRChatProps) {
             </button>
           </div>
 
-          {/* Title in center */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <span className="text-xs font-bold text-slate-200 tracking-wide font-sans">Asistente de Código IA</span>
           </div>
 
-          {/* Status indicator on the right */}
           <div className="flex items-center space-x-1.5 z-10 text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>En línea</span>
           </div>
         </div>
 
-        {/* Chat Messages */}
         <div className="p-4 md:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 bg-slate-950/20">
           {messages.map((msg, index) => {
             const isAssistant = msg.role === 'assistant';
@@ -343,7 +327,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
                   isAssistant ? 'mr-auto text-left' : 'ml-auto flex-row-reverse text-left'
                 }`}
               >
-                {/* Avatar */}
                 <div
                   className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-lg border text-xs font-semibold ${
                     isAssistant
@@ -366,7 +349,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
                   )}
                 </div>
 
-                {/* Message Bubble */}
                 <div
                   className={`rounded-2xl px-4 py-3 text-sm shadow-sm border ${
                     isAssistant
@@ -382,7 +364,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Form */}
         <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-800/80 bg-slate-900/30 shrink-0">
           <div className="flex gap-2">
             <input
@@ -408,7 +389,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
 
   return (
     <>
-      {/* Floating Chat Trigger Circle Button */}
       <button
         onClick={() => setChatOpen(true)}
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-[0_4px_20px_rgba(99,102,241,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 z-[80] group"
@@ -418,7 +398,6 @@ export default function PRChat({ diffText, review }: PRChatProps) {
         <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-slate-950 animate-pulse"></span>
       </button>
 
-      {/* Render modal inside Portal at the body level */}
       {mounted && chatOpen && typeof window !== 'undefined'
         ? createPortal(modalContent, document.body)
         : null}
