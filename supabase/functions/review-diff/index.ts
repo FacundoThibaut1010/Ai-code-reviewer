@@ -166,9 +166,27 @@ serve(async (req) => {
       });
     }
 
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     const grokApiKey = Deno.env.get('GROK_API_KEY');
-    if (!grokApiKey || grokApiKey === 'TU_API_KEY' || grokApiKey.includes('placeholder')) {
-      console.warn("Falta la API Key de Grok o tiene valor por defecto. Activando modo Demo.");
+
+    let apiKey = '';
+    let apiUrl = '';
+    let apiModel = '';
+
+    if (geminiApiKey && geminiApiKey !== 'TU_API_KEY' && !geminiApiKey.includes('placeholder')) {
+      console.log("Usando API Key de Gemini con gemini-2.5-flash.");
+      apiKey = geminiApiKey;
+      apiUrl = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+      apiModel = 'gemini-2.5-flash';
+    } else if (grokApiKey && grokApiKey !== 'TU_API_KEY' && !grokApiKey.includes('placeholder')) {
+      console.log("Usando API Key de Grok con grok-3.");
+      apiKey = grokApiKey;
+      apiUrl = 'https://api.x.ai/v1/chat/completions';
+      apiModel = 'grok-3';
+    }
+
+    if (!apiKey) {
+      console.warn("No hay API Key de Gemini ni de Grok configurada. Activando modo Demo.");
       return streamMockReview(corsHeaders, diff, settings);
     }
 
@@ -228,15 +246,15 @@ Estructura exacta del JSON esperado:
 
 Si una categoría no tiene hallazgos o no fue seleccionada, debes retornar obligatoriamente un array vacío [].`;
 
-    // Llamada a la API de Grok con Streaming
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    // Llamada a la API de IA con Streaming
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${grokApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'grok-3',
+        model: apiModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Aquí está el diff de la Pull Request:\n\n${diff}` },
@@ -247,11 +265,11 @@ Si una categoría no tiene hallazgos o no fue seleccionada, debes retornar oblig
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.warn(`La API de Grok falló con código ${response.status}: ${errorText}. Activando modo Demo de contingencia.`);
+      console.warn(`La API de IA falló con código ${response.status}: ${errorText}. Activando modo Demo de contingencia.`);
       return streamMockReview(corsHeaders, diff, settings);
     }
 
-    // Transformar el stream de Grok al formato esperado por el frontend (Anthropic content_block_delta)
+    // Transformar el stream de la IA al formato esperado por el frontend (Anthropic content_block_delta)
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const reader = response.body?.getReader();
@@ -323,7 +341,7 @@ Si una categoría no tiene hallazgos o no fue seleccionada, debes retornar oblig
           }
         }
       } catch (err) {
-        console.error('Error transforming Grok stream:', err);
+        console.error('Error transforming AI stream:', err);
       } finally {
         await writer.close();
       }
