@@ -349,7 +349,7 @@ export default function HistoryPage() {
       </div>
 
       {/* Tabs Selector */}
-      <div className="grid grid-cols-2 sm:flex border border-slate-800 my-6 bg-slate-950 p-1.5 rounded-2xl w-full sm:w-auto gap-1 shadow-md">
+      <div className="grid grid-cols-2 sm:inline-flex border border-slate-800 mt-8 mb-6 bg-slate-950 p-1.5 rounded-2xl w-full sm:w-auto gap-1 shadow-md self-start">
         <button
           onClick={() => {
             setActiveTab('prs');

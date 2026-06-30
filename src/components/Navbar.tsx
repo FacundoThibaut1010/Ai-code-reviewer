@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { LogOut, History, LayoutDashboard, Menu, X, GitCompare } from 'lucide-react';
+import { LogOut, History, LayoutDashboard, Menu, X, GitCompare, Sun, Moon } from 'lucide-react';
 import RobotLogo from '@/components/RobotLogo';
 
 export default function Navbar() {
@@ -14,6 +14,7 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
     async function getInitialUser() {
@@ -29,6 +30,17 @@ export default function Navbar() {
 
     getInitialUser();
 
+    // Theme initialization and event listener
+    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    setTheme(savedTheme || 'dark');
+
+    const handleThemeChange = () => {
+      const current = (localStorage.getItem('theme') as 'dark' | 'light' | null) || 'dark';
+      setTheme(current);
+    };
+
+    window.addEventListener('theme-change', handleThemeChange);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -36,8 +48,25 @@ export default function Navbar() {
 
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('theme-change', handleThemeChange);
     };
   }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+
+    window.dispatchEvent(new Event('theme-change'));
+  };
 
   const handleSignOut = async () => {
     try {
@@ -117,6 +146,19 @@ export default function Navbar() {
 
           {/* User Info / Sign Out */}
           <div className="flex items-center space-x-4">
+            {!loading && user && (
+              <button
+                onClick={toggleTheme}
+                className="hidden md:flex items-center justify-center h-9 w-9 rounded-lg border border-slate-800 bg-slate-900/40 text-slate-400 hover:text-white hover:bg-slate-850 hover:border-slate-700 hover:shadow-md transition-colors"
+                title={theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-4.5 w-4.5 text-amber-400" />
+                ) : (
+                  <Moon className="h-4.5 w-4.5 text-slate-500" />
+                )}
+              </button>
+            )}
             {!loading && user && (
               <div className="flex items-center space-x-3 border-l border-slate-800 pl-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

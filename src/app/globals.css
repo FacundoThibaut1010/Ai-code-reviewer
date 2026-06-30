@@ -65,14 +65,14 @@ body {
 @keyframes sileo-pop {
   0% {
     opacity: 0;
-    transform: scale(0.85);
+    transform: translate(-50%, -50%) scale(0.85);
   }
   70% {
-    transform: scale(1.02);
+    transform: translate(-50%, -50%) scale(1.02);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -240,4 +240,96 @@ body {
 .light .bg-slate-950\/90 {
   background-color: rgba(255, 255, 255, 0.9) !important;
 }
+
+/* Light mode specific element text and link overrides */
+.light .bg-clip-text {
+  background-image: linear-gradient(to right, rgb(15, 23, 42), rgb(79, 70, 229)) !important;
+}
+
+.light nav a.bg-slate-800\/80 {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  color: rgb(79, 70, 229) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.light nav a.bg-slate-800\/80 svg {
+  color: rgb(79, 70, 229) !important;
+}
+
+.light nav a.text-slate-400:hover {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+  color: rgb(15, 23, 42) !important;
+}
+
+.light .bg-indigo-600 {
+  background-color: rgb(79, 70, 229) !important;
+  color: #ffffff !important;
+}
+
+.light .bg-slate-950\/50 button.bg-indigo-600,
+.light button.bg-indigo-600 span {
+  color: #ffffff !important;
+}
+
+/* Selected checkbox label cards in light mode */
+.light label.bg-indigo-500\/5 {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  border-color: rgb(79, 70, 229) !important;
+  color: rgb(79, 70, 229) !important;
+}
+
+.light label.bg-indigo-500\/5 span {
+  color: rgb(79, 70, 229) !important;
+}
+
+/* Color overrides for code issues paths/lines in Light Mode */
+.light .text-rose-300 {
+  color: rgb(153, 27, 27) !important; /* deep red */
+}
+.light .bg-rose-500\/20 {
+  background-color: rgb(254, 226, 226) !important;
+  color: rgb(153, 27, 27) !important;
+}
+
+.light .text-amber-300 {
+  color: rgb(146, 64, 14) !important; /* deep amber */
+}
+.light .bg-amber-500\/20 {
+  background-color: rgb(254, 243, 199) !important;
+  color: rgb(146, 64, 14) !important;
+}
+
+.light .text-emerald-300 {
+  color: rgb(6, 95, 70) !important; /* deep green */
+}
+.light .bg-emerald-500\/20 {
+  background-color: rgb(209, 250, 229) !important;
+  color: rgb(6, 95, 70) !important;
+}
+
+.light .text-indigo-300 {
+  color: rgb(55, 48, 163) !important; /* deep indigo */
+}
+.light .bg-indigo-500\/20 {
+  background-color: rgb(224, 231, 255) !important;
+  color: rgb(55, 48, 163) !important;
+}
+
+/* Deep colors for icons and state descriptions in Light Mode */
+.light .text-indigo-400 {
+  color: rgb(79, 70, 229) !important; /* deep indigo */
+}
+
+.light .text-slate-400 {
+  color: rgb(71, 85, 105) !important;
+}
+
+.light .text-slate-500 {
+  color: rgb(100, 116, 139) !important;
+}
+
+.light .bg-slate-900\/20 {
+  border-color: #cbd5e1 !important;
+}
+
 
