@@ -141,7 +141,7 @@ export default function LoginPage() {
         </div>
 
         {/* Feature Highlights */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-4.5 sm:p-6 space-y-3.5 sm:space-y-4 shadow-xl">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md p-5 sm:p-6 space-y-4 shadow-xl">
           <div className="flex items-start space-x-3.5">
             <div className="mt-0.5 rounded-lg bg-indigo-500/15 p-1.5 text-indigo-400 border border-indigo-500/20">
               <Zap className="h-4 w-4" />
