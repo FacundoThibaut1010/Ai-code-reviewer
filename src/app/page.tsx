@@ -163,6 +163,16 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-start space-x-3.5">
+            <div className="mt-0.5 rounded-lg bg-indigo-500/15 p-1.5 text-indigo-400 border border-indigo-500/20">
+              <Search className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-200">Análisis de Proyecto Completo</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Generá una descripción profesional de tu repositorio para portfolio, CV o LinkedIn.</p>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-3.5">
             <div className="mt-0.5 rounded-lg bg-amber-500/15 p-1.5 text-amber-400 border border-amber-500/20">
               <History className="h-4 w-4" />
             </div>
@@ -172,15 +182,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-start space-x-3.5">
-            <div className="mt-0.5 rounded-lg bg-indigo-500/15 p-1.5 text-indigo-400 border border-indigo-500/20">
-              <Search className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-200">Análisis de Proyecto Completo</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Generá una descripción profesional de tu repositorio para portfolio, CV o LinkedIn.</p>
-            </div>
-          </div>
         </div>
 
         {/* Action area */}
