@@ -58,17 +58,17 @@ export default function PRChat({ diffText, review }: PRChatProps) {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
     if (chatOpen) {
       document.body.classList.add('chat-open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(scrollToBottom, 100);
     } else {
       document.body.classList.remove('chat-open');
+      document.body.style.overflow = '';
     }
     return () => {
       document.body.classList.remove('chat-open');
+      document.body.style.overflow = '';
     };
   }, [chatOpen]);
 
@@ -89,6 +89,7 @@ export default function PRChat({ diffText, review }: PRChatProps) {
 
     // Agregar mensaje vacío del asistente que se llenará con streaming
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+    setTimeout(scrollToBottom, 50);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();

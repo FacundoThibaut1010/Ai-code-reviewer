@@ -43,7 +43,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             onClick={() => {
               sileo.clear();
             }}
-            className="rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-3 py-1.5 text-[11px] border border-slate-700 transition-colors active:scale-[0.98]"
+            className="rounded bg-slate-700 hover:bg-slate-600 text-white font-semibold px-3 py-1.5 text-[11px] border border-slate-600 transition-colors active:scale-[0.98]"
           >
             Cancelar
           </button>
