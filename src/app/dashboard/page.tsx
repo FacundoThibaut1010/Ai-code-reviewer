@@ -276,7 +276,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Description */}
-                <p className="text-xs text-slate-400 line-clamp-2 h-8 leading-relaxed">
+                <p className="text-xs text-slate-400 line-clamp-2 min-h-[2.5rem] leading-normal">
                   {repo.description || 'Sin descripción disponible.'}
                 </p>
               </div>

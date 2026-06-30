@@ -93,3 +93,151 @@ body {
   animation: sileo-fade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Light mode theme overrides */
+.light {
+  color-scheme: light;
+}
+
+.light body {
+  background-color: #f8fafc !important; /* bg-slate-50 */
+  color: #0f172a !important; /* text-slate-900 */
+}
+
+/* Override background colors of elements */
+.light .bg-slate-950,
+.light .bg-slate-950\/60,
+.light .bg-slate-950\/50,
+.light .bg-slate-950\/40,
+.light .bg-slate-950\/30 {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-slate-900,
+.light .bg-slate-900\/40,
+.light .bg-slate-900\/20,
+.light .bg-slate-900\/10,
+.light .bg-slate-900\/15,
+.light .bg-slate-900\/5,
+.light .bg-slate-900\/30,
+.light .bg-slate-900\/60,
+.light .bg-slate-900\/80,
+.light .bg-slate-950\/30 {
+  background-color: #ffffff !important;
+}
+
+.light .bg-slate-950\/40 {
+  background-color: #f1f5f9 !important;
+}
+
+.light .bg-slate-950\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Overriding text colors */
+.light .text-white,
+.light .text-slate-100,
+.light .text-slate-200 {
+  color: #0f172a !important;
+}
+
+.light .text-slate-300,
+.light .text-slate-350,
+.light .text-slate-400 {
+  color: #334155 !important; /* slate-700 */
+}
+
+.light .text-slate-500 {
+  color: #64748b !important; /* slate-500 */
+}
+
+/* Override borders */
+.light .border-slate-800,
+.light .border-slate-850,
+.light .border-slate-855,
+.light .border-slate-900,
+.light .border-slate-900\/60,
+.light .border-slate-800\/80 {
+  border-color: #cbd5e1 !important; /* slate-300 */
+}
+
+.light .border-indigo-900\/20 {
+  border-color: #c7d2fe !important;
+}
+
+/* Inputs & select box */
+.light input,
+.light select,
+.light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light input:focus,
+.light select:focus,
+.light textarea:focus {
+  border-color: #6366f1 !important;
+}
+
+/* Buttons */
+.light .bg-slate-900\/30,
+.light .bg-slate-950\/50 {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+.light .hover\:bg-slate-900\/40:hover,
+.light .hover\:bg-slate-900\/60:hover,
+.light .hover\:bg-slate-900\/20:hover,
+.light .hover\:bg-slate-900:hover,
+.light .hover\:bg-slate-800:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Nav */
+.light nav {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Score Pills */
+.light .bg-emerald-950\/40,
+.light .bg-emerald-950\/20 {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.light .bg-amber-950\/40,
+.light .bg-amber-950\/20 {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  border-color: #fde28a !important;
+}
+
+.light .bg-rose-950\/40,
+.light .bg-rose-950\/20 {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
+}
+
+/* Scrollbars */
+.light ::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #6366f1 !important;
+}
+
+/* Alert Provider modal */
+.light .bg-slate-950\/90 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+

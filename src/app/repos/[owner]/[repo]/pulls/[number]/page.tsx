@@ -278,10 +278,10 @@ export default function PRDetailsPage() {
       <div className="pb-6 border-b border-slate-900">
         <Link
           href={`/repos/${owner}/${repo}`}
-          className="inline-flex items-center text-xs font-semibold text-slate-400 hover:text-white transition-colors mb-4"
+          className="inline-flex items-center space-x-2 rounded-xl bg-slate-900/80 border border-slate-800 px-4 py-2.5 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 hover:shadow-md transition-all active:scale-[0.98] mb-6"
         >
-          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-          Volver a Pull Requests
+          <ArrowLeft className="h-4 w-4 text-slate-500" />
+          <span>Volver a Pull Requests</span>
         </Link>
 
         {loading ? (

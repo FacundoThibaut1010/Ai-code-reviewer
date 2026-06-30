@@ -349,29 +349,35 @@ export default function HistoryPage() {
       </div>
 
       {/* Tabs Selector */}
-      <div className="flex border-b border-slate-900 my-6 bg-slate-900/10 rounded-xl overflow-hidden p-1 self-start">
+      <div className="grid grid-cols-2 sm:flex border border-slate-800 my-6 bg-slate-950 p-1.5 rounded-2xl w-full sm:w-auto gap-1 shadow-md">
         <button
           onClick={() => {
             setActiveTab('prs');
             setExpandedReviewId(null);
+            setSelectedRepo('all');
+            setSearchQuery('');
+            setSelectedDateFilter('all');
           }}
-          className={`px-5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap text-center ${
             activeTab === 'prs'
-              ? 'bg-indigo-600 text-white font-bold shadow-md'
-              : 'text-slate-400 hover:text-slate-205 hover:bg-slate-900/30'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
           }`}
         >
-          Auditorías de Pull Requests
+          Auditorías de PRs
         </button>
         <button
           onClick={() => {
             setActiveTab('projects');
             setExpandedReviewId(null);
+            setSelectedRepo('all');
+            setSearchQuery('');
+            setSelectedDateFilter('all');
           }}
-          className={`px-5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
+          className={`px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap text-center ${
             activeTab === 'projects'
-              ? 'bg-indigo-600 text-white font-bold shadow-md'
-              : 'text-slate-400 hover:text-slate-205 hover:bg-slate-900/30'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
           }`}
         >
           Análisis de Proyectos

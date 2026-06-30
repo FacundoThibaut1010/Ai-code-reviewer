@@ -27,6 +27,8 @@ export default function PRChat({ diffText, review }: PRChatProps) {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -239,88 +241,143 @@ export default function PRChat({ diffText, review }: PRChatProps) {
   };
 
   return (
-    <div className="mt-8 rounded-2xl border border-slate-800/80 bg-slate-900/10 backdrop-blur-md overflow-hidden shadow-lg flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <MessageSquareCode className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-white">Asistente de Código IA</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Consultá detalles técnicos sobre la Pull Request</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En línea</span>
-        </div>
-      </div>
+    <>
+      {/* Floating Chat Trigger Circle Button */}
+      <button
+        onClick={() => setChatOpen(true)}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-[0_4px_20px_rgba(99,102,241,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 z-[80] group"
+        title="Hablar con el Asistente de IA"
+      >
+        <MessageSquareCode className="h-6 w-6 group-hover:rotate-6 transition-transform" />
+        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-slate-950 animate-pulse"></span>
+      </button>
 
-      {/* Messages */}
-      <div className="p-4 md:p-6 space-y-4 max-h-[420px] overflow-y-auto custom-scrollbar flex-1 bg-slate-950/20">
-        {messages.map((msg, index) => {
-          const isAssistant = msg.role === 'assistant';
-          return (
-            <div
-              key={index}
-              className={`flex items-start gap-3 max-w-[85%] ${
-                isAssistant ? 'mr-auto text-left' : 'ml-auto flex-row-reverse text-left'
-              }`}
-            >
-              {/* Avatar */}
-              <div
-                className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-lg border text-xs font-semibold ${
-                  isAssistant
-                    ? 'border-slate-800 bg-slate-900 text-indigo-400'
-                    : 'border-indigo-500/30 bg-indigo-600/10 text-indigo-300'
-                }`}
-              >
-                {isAssistant ? (
-                  <div className="text-indigo-400 scale-90">
-                    <RobotLogo size={20} interactive={false} />
-                  </div>
-                ) : (
-                  <User className="h-4 w-4" />
-                )}
+      {/* Centered Modal macOS Styled Chat Window */}
+      {chatOpen && (
+        <>
+          {/* Backdrop Blur overlay */}
+          <div 
+            onClick={() => setChatOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] animate-in fade-in duration-200"
+          />
+
+          {/* Modal Container */}
+          <div 
+            className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-2xl flex flex-col z-[100] transition-all duration-300 ease-out animate-sileo-pop ${
+              isMaximized 
+                ? 'w-[90vw] max-w-4xl h-[80vh]' 
+                : 'w-[90vw] max-w-lg h-[520px]'
+            }`}
+          >
+            {/* macOS Title Bar */}
+            <div className="px-4 py-3 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between select-none shrink-0 relative">
+              {/* Traffic Light Circles (macOS style) */}
+              <div className="flex items-center space-x-2 z-10">
+                {/* Red: Close */}
+                <button 
+                  onClick={() => setChatOpen(false)}
+                  className="h-3 w-3 rounded-full bg-rose-500 hover:bg-rose-600 transition-colors flex items-center justify-center group"
+                  title="Cerrar"
+                >
+                  <span className="text-[8px] text-rose-950 font-bold opacity-0 group-hover:opacity-100 transition-opacity">×</span>
+                </button>
+                {/* Yellow: Minimize/Close to button */}
+                <button 
+                  onClick={() => setChatOpen(false)}
+                  className="h-3 w-3 rounded-full bg-amber-500 hover:bg-amber-600 transition-colors flex items-center justify-center group"
+                  title="Minimizar"
+                >
+                  <span className="text-[8px] text-amber-950 font-bold opacity-0 group-hover:opacity-100 transition-opacity">-</span>
+                </button>
+                {/* Green: Toggle size */}
+                <button 
+                  onClick={() => setIsMaximized(!isMaximized)}
+                  className="h-3 w-3 rounded-full bg-emerald-500 hover:bg-emerald-600 transition-colors flex items-center justify-center group"
+                  title={isMaximized ? "Restaurar" : "Maximizar"}
+                >
+                  <span className="text-[7px] text-emerald-950 font-bold opacity-0 group-hover:opacity-100 transition-opacity">↕</span>
+                </button>
               </div>
 
-              {/* Message Bubble */}
-              <div
-                className={`rounded-2xl px-4 py-3 text-sm shadow-sm border ${
-                  isAssistant
-                    ? 'bg-slate-900/60 border-slate-800/80 text-slate-300 rounded-tl-sm'
-                    : 'bg-indigo-600/10 border-indigo-500/20 text-indigo-100 rounded-tr-sm'
-                }`}
-              >
-                {renderMessageContent(msg.content)}
+              {/* Title in center */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-xs font-bold text-slate-200 tracking-wide font-sans">Asistente de Código IA</span>
+              </div>
+
+              {/* Status indicator on the right */}
+              <div className="flex items-center space-x-1.5 z-10 text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>En línea</span>
               </div>
             </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
 
-      {/* Form */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-800/80 bg-slate-900/30">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Preguntale a la IA sobre los hallazgos o mejoras..."
-            disabled={isStreaming}
-            className="flex-1 rounded-xl border border-slate-800 bg-slate-950/60 py-2.5 px-4 text-sm text-slate-200 placeholder:text-slate-500 shadow-inner focus:border-indigo-500/80 focus:outline-none focus:ring-1 focus:ring-indigo-500/80 disabled:opacity-50"
-          />
-          <button
-            type="submit"
-            disabled={!inputValue.trim() || isStreaming}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition-colors active:scale-[0.97] disabled:bg-slate-800 disabled:text-slate-500 disabled:scale-100"
-          >
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
-      </form>
-    </div>
+            {/* Chat Messages */}
+            <div className="p-4 md:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 bg-slate-950/20">
+              {messages.map((msg, index) => {
+                const isAssistant = msg.role === 'assistant';
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-start gap-3 max-w-[85%] ${
+                      isAssistant ? 'mr-auto text-left' : 'ml-auto flex-row-reverse text-left'
+                    }`}
+                  >
+                    {/* Avatar */}
+                    <div
+                      className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-lg border text-xs font-semibold ${
+                        isAssistant
+                          ? 'border-slate-800 bg-slate-900 text-indigo-400'
+                          : 'border-indigo-500/30 bg-indigo-600/10 text-indigo-300'
+                      }`}
+                    >
+                      {isAssistant ? (
+                        <div className="text-indigo-400 scale-90">
+                          <RobotLogo size={20} interactive={false} />
+                        </div>
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                    </div>
+
+                    {/* Message Bubble */}
+                    <div
+                      className={`rounded-2xl px-4 py-3 text-sm shadow-sm border ${
+                        isAssistant
+                          ? 'bg-slate-900/60 border-slate-800/80 text-slate-350 rounded-tl-sm font-sans'
+                          : 'bg-indigo-600/10 border-indigo-500/20 text-indigo-100 rounded-tr-sm font-sans'
+                      }`}
+                    >
+                      {renderMessageContent(msg.content)}
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Form */}
+            <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-800/80 bg-slate-900/30 shrink-0">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Preguntale a la IA sobre los hallazgos o mejoras..."
+                  disabled={isStreaming}
+                  className="flex-1 rounded-xl border border-slate-800 bg-slate-950/60 py-2.5 px-4 text-sm text-slate-200 placeholder:text-slate-500 shadow-inner focus:border-indigo-500/80 focus:outline-none focus:ring-1 focus:ring-indigo-500/80 disabled:opacity-50 font-sans"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputValue.trim() || isStreaming}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition-colors active:scale-[0.97] disabled:bg-slate-800 disabled:text-slate-500 disabled:scale-100"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+    </>
   );
 }
