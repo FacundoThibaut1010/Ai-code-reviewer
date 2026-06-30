@@ -207,112 +207,114 @@ export default function ComparePage() {
               {/* Comparison Results */}
               {showComparison && review1 && review2 && (
                 <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
-                  <table className="w-full border-collapse text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-800 bg-slate-900/40">
-                        <th className="p-4 font-bold text-slate-400 w-1/4">Métrica</th>
-                        <th className="p-4 font-bold text-slate-100 text-center w-3/8 border-l border-slate-800 bg-slate-900/20">
-                          PR A: {review1.pr_title}
-                          <span className="block text-xs font-semibold text-slate-500 mt-1 font-mono">
-                            {review1.repo_owner}/{review1.repo_name}
-                          </span>
-                        </th>
-                        <th className="p-4 font-bold text-slate-100 text-center w-3/8 border-l border-slate-800 bg-slate-900/20">
-                          PR B: {review2.pr_title}
-                          <span className="block text-xs font-semibold text-slate-500 mt-1 font-mono">
-                            {review2.repo_owner}/{review2.repo_name}
-                          </span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-900">
-                      {/* Repositorio */}
-                      <tr>
-                        <td className="p-4 font-bold text-slate-400 flex items-center">
-                          <FileText className="mr-2 h-4 w-4 text-slate-500" />
-                          Repositorio y PR
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className="text-white font-medium">{review1.pr_title}</span>
-                          <span className="block text-xs text-slate-400 mt-0.5 font-mono">{review1.repo_owner}/{review1.repo_name}</span>
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className="text-white font-medium">{review2.pr_title}</span>
-                          <span className="block text-xs text-slate-400 mt-0.5 font-mono">{review2.repo_owner}/{review2.repo_name}</span>
-                        </td>
-                      </tr>
+                  <div className="overflow-x-auto w-full">
+                    <table className="min-w-[650px] w-full border-collapse text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-800 bg-slate-900/40">
+                          <th className="p-4 font-bold text-slate-400 w-1/4">Métrica</th>
+                          <th className="p-4 font-bold text-slate-100 text-center w-3/8 border-l border-slate-800 bg-slate-900/20">
+                            PR A: {review1.pr_title}
+                            <span className="block text-xs font-semibold text-slate-500 mt-1 font-mono">
+                              {review1.repo_owner}/{review1.repo_name}
+                            </span>
+                          </th>
+                          <th className="p-4 font-bold text-slate-100 text-center w-3/8 border-l border-slate-800 bg-slate-900/20">
+                            PR B: {review2.pr_title}
+                            <span className="block text-xs font-semibold text-slate-500 mt-1 font-mono">
+                              {review2.repo_owner}/{review2.repo_name}
+                            </span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-900">
+                        {/* Repositorio */}
+                        <tr>
+                          <td className="p-4 font-bold text-slate-400 flex items-center">
+                            <FileText className="mr-2 h-4 w-4 text-slate-500" />
+                            Repositorio y PR
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className="text-white font-medium">{review1.pr_title}</span>
+                            <span className="block text-xs text-slate-400 mt-0.5 font-mono">{review1.repo_owner}/{review1.repo_name}</span>
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className="text-white font-medium">{review2.pr_title}</span>
+                            <span className="block text-xs text-slate-400 mt-0.5 font-mono">{review2.repo_owner}/{review2.repo_name}</span>
+                          </td>
+                        </tr>
 
-                      {/* Score General */}
-                      <tr>
-                        <td className="p-4 font-bold text-slate-400 flex items-center">
-                          <Award className="mr-2 h-4 w-4 text-indigo-400" />
-                          Score General
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesScore.cell1}>{stats1.score} / 10</span>
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesScore.cell2}>{stats2.score} / 10</span>
-                        </td>
-                      </tr>
+                        {/* Score General */}
+                        <tr>
+                          <td className="p-4 font-bold text-slate-400 flex items-center">
+                            <Award className="mr-2 h-4 w-4 text-indigo-400" />
+                            Score General
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesScore.cell1}>{stats1.score} / 10</span>
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesScore.cell2}>{stats2.score} / 10</span>
+                          </td>
+                        </tr>
 
-                      {/* Bugs */}
-                      <tr>
-                        <td className="p-4 font-bold text-slate-400 flex items-center">
-                          <AlertTriangle className="mr-2 h-4 w-4 text-rose-400" />
-                          Bugs Detectados
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesBugs.cell1}>{stats1.bugs}</span>
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesBugs.cell2}>{stats2.bugs}</span>
-                        </td>
-                      </tr>
+                        {/* Bugs */}
+                        <tr>
+                          <td className="p-4 font-bold text-slate-400 flex items-center">
+                            <AlertTriangle className="mr-2 h-4 w-4 text-rose-400" />
+                            Bugs Detectados
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesBugs.cell1}>{stats1.bugs}</span>
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesBugs.cell2}>{stats2.bugs}</span>
+                          </td>
+                        </tr>
 
-                      {/* Sugerencias */}
-                      <tr>
-                        <td className="p-4 font-bold text-slate-400 flex items-center">
-                          <Award className="mr-2 h-4 w-4 text-amber-400" />
-                          Sugerencias
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesSugs.cell1}>{stats1.sugs}</span>
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesSugs.cell2}>{stats2.sugs}</span>
-                        </td>
-                      </tr>
+                        {/* Sugerencias */}
+                        <tr>
+                          <td className="p-4 font-bold text-slate-400 flex items-center">
+                            <Award className="mr-2 h-4 w-4 text-amber-400" />
+                            Sugerencias
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesSugs.cell1}>{stats1.sugs}</span>
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesSugs.cell2}>{stats2.sugs}</span>
+                          </td>
+                        </tr>
 
-                      {/* Seguridad */}
-                      <tr>
-                        <td className="p-4 font-bold text-slate-400 flex items-center">
-                          <ShieldAlert className="mr-2 h-4 w-4 text-red-500" />
-                          Issues de Seguridad
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesSec.cell1}>{stats1.sec}</span>
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesSec.cell2}>{stats2.sec}</span>
-                        </td>
-                      </tr>
+                        {/* Seguridad */}
+                        <tr>
+                          <td className="p-4 font-bold text-slate-400 flex items-center">
+                            <ShieldAlert className="mr-2 h-4 w-4 text-red-500" />
+                            Issues de Seguridad
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesSec.cell1}>{stats1.sec}</span>
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesSec.cell2}>{stats2.sec}</span>
+                          </td>
+                        </tr>
 
-                      {/* Complejidad */}
-                      <tr>
-                        <td className="p-4 font-bold text-slate-400 flex items-center">
-                          <GitCompare className="mr-2 h-4 w-4 text-slate-500" />
-                          Complejidad
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesComp.cell1}>{stats1.comp.label}</span>
-                        </td>
-                        <td className="p-4 text-center border-l border-slate-900">
-                          <span className={stylesComp.cell2}>{stats2.comp.label}</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                        {/* Complejidad */}
+                        <tr>
+                          <td className="p-4 font-bold text-slate-400 flex items-center">
+                            <GitCompare className="mr-2 h-4 w-4 text-slate-500" />
+                            Complejidad
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesComp.cell1}>{stats1.comp.label}</span>
+                          </td>
+                          <td className="p-4 text-center border-l border-slate-900">
+                            <span className={stylesComp.cell2}>{stats2.comp.label}</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
