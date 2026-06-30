@@ -94,7 +94,7 @@ Desarrollo de **${cleanName}**, ${projectType} orientada a ${repoDesc.toLowerCas
 
   (async () => {
     try {
-      const chunkSize = 12; // Send 12 characters per interval
+      const chunkSize = 45; // Send 45 characters per interval
       for (let i = 0; i < responseText.length; i += chunkSize) {
         const chunk = responseText.substring(i, i + chunkSize);
         const sseData = `data: ${JSON.stringify({
@@ -103,7 +103,7 @@ Desarrollo de **${cleanName}**, ${projectType} orientada a ${repoDesc.toLowerCas
         })}\n\n`;
         
         await writer.write(encoder.encode(sseData));
-        await new Promise((resolve) => setTimeout(resolve, 20)); // 20ms delay
+        await new Promise((resolve) => setTimeout(resolve, 10)); // 10ms delay
       }
       await writer.write(encoder.encode('data: [DONE]\n\n'));
     } catch (err) {

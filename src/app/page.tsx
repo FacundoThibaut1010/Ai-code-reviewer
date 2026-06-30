@@ -136,7 +136,7 @@ export default function LoginPage() {
             AI Code Reviewer
           </h1>
           <p className="mt-2 text-sm text-slate-400 max-w-sm">
-            Audita tus pull requests de GitHub automáticamente con Grok 3 en segundos.
+            Audita tus pull requests y analiza tus proyectos de GitHub en segundos con Gemini.
           </p>
         </div>
 

@@ -55,7 +55,7 @@ export default function ReviewRenderer({ review, isStreaming }: ReviewRendererPr
                   Generando revisión en tiempo real...
                 </span>
               ) : (
-                'Análisis de código completado con Claude Sonnet 3.5'
+                'Análisis de código completado con Gemini'
               )}
             </p>
           </div>

@@ -107,7 +107,7 @@ function streamMockChat(headers: any, messages: any[], diff: string, review: any
 
   (async () => {
     try {
-      const chunkSize = 10; // Send 10 characters per interval
+      const chunkSize = 35; // Send 35 characters per interval
       for (let i = 0; i < responseText.length; i += chunkSize) {
         const chunk = responseText.substring(i, i + chunkSize);
         const sseData = `data: ${JSON.stringify({
@@ -116,7 +116,7 @@ function streamMockChat(headers: any, messages: any[], diff: string, review: any
         })}\n\n`;
         
         await writer.write(encoder.encode(sseData));
-        await new Promise((resolve) => setTimeout(resolve, 20)); // 20ms delay
+        await new Promise((resolve) => setTimeout(resolve, 10)); // 10ms delay
       }
       await writer.write(encoder.encode('data: [DONE]\n\n'));
     } catch (err) {

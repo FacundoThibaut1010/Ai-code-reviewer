@@ -42,7 +42,7 @@ export default function LoadingScreen({
       if (intProgress < 20) {
         setStatusText('Cargando módulos de seguridad...');
       } else if (intProgress < 45) {
-        setStatusText('Conectando con la API de Claude 3.5 Sonnet...');
+        setStatusText('Conectando con la API de Gemini...');
       } else if (intProgress < 70) {
         setStatusText('Sincronizando tokens de sesión...');
       } else if (intProgress < 88) {

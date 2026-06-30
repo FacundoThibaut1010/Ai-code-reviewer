@@ -28,6 +28,7 @@ import {
   Sparkles,
   Loader2,
   AlertTriangle,
+  Save,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAlert } from '@/components/AlertProvider';
@@ -53,11 +54,14 @@ export default function RepoPullRequestsPage() {
   const [analyzingProject, setAnalyzingProject] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [copiedSection, setCopiedSection] = useState<'linkedin' | 'cv' | 'portfolio' | null>(null);
+  const [isSavedInDb, setIsSavedInDb] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const startProjectAnalysis = async () => {
     setAnalyzingProject(true);
     setAnalysisError(null);
     setProjectAnalysis('');
+    setIsSavedInDb(false);
     
     try {
       const token = localStorage.getItem('github_provider_token');
@@ -153,7 +157,7 @@ export default function RepoPullRequestsPage() {
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new Error(errText || 'Error al conectar con la IA de Grok.');
+        throw new Error(errText || 'Error al conectar con la IA de Gemini.');
       }
 
       const reader = response.body?.getReader();
@@ -290,6 +294,48 @@ export default function RepoPullRequestsPage() {
     }, 2000);
   };
 
+  const handleSaveProjectAnalysis = async () => {
+    if (!projectAnalysis || isSavedInDb || analyzingProject) return;
+
+    setSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No hay sesión de usuario activa.');
+
+      const { linkedin, cv, portfolio } = parseAnalysisSections(projectAnalysis);
+
+      const { error: dbError } = await supabase.from('reviews').insert({
+        user_id: session.user.id,
+        repo_name: repo,
+        repo_owner: owner,
+        pr_number: 0,
+        pr_title: 'Análisis de Proyecto',
+        pr_url: `https://github.com/${owner}/${repo}`,
+        review_content: { type: 'project_analysis', linkedin, cv, portfolio },
+        score: 10,
+        created_at: new Date().toISOString(),
+      });
+
+      if (dbError) throw dbError;
+
+      setIsSavedInDb(true);
+      showAlert({
+        type: 'success',
+        title: 'Análisis Guardado',
+        message: 'Las descripciones del proyecto fueron guardadas correctamente en Supabase.',
+      });
+    } catch (err: unknown) {
+      console.error('Error saving project analysis:', err);
+      showAlert({
+        type: 'error',
+        title: 'Error de Guardado',
+        message: 'No se pudo guardar el análisis del proyecto.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -316,12 +362,24 @@ export default function RepoPullRequestsPage() {
       // Fetch saved reviews from Supabase to check which PRs already have reviews
       const { data: dbReviews, error: dbError } = await supabase
         .from('reviews')
-        .select('pr_number, score')
+        .select('*')
         .eq('repo_owner', owner)
         .eq('repo_name', repo);
 
       if (dbError) {
         console.error('Error fetching Supabase reviews:', dbError);
+      }
+
+      // Check if project analysis is saved
+      const savedProjectAnalysis = dbReviews?.find((r) => r.pr_number === 0);
+      if (savedProjectAnalysis) {
+        const content = savedProjectAnalysis.review_content as { linkedin?: string; cv?: string; portfolio?: string; };
+        const reconstructedText = `### LINKEDIN\n${content.linkedin || ''}\n\n### CV\n${content.cv || ''}\n\n### PORTFOLIO\n${content.portfolio || ''}`;
+        setProjectAnalysis(reconstructedText);
+        setIsSavedInDb(true);
+      } else {
+        setProjectAnalysis('');
+        setIsSavedInDb(false);
       }
 
       // Merge GitHub PRs with DB reviews status
@@ -596,7 +654,7 @@ export default function RepoPullRequestsPage() {
               <Sparkles className="h-12 w-12 text-indigo-400 mx-auto mb-4 animate-pulse" />
               <h3 className="text-lg font-bold text-white mb-2">Generar Ficha Ejecutiva del Proyecto</h3>
               <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
-                Leeremos el código fuente de los archivos clave, commits recientes y lenguajes para que la IA de Grok genere descripciones adaptadas para tu CV, LinkedIn o tu portafolio personal.
+                Leeremos el código fuente de los archivos clave, commits recientes y lenguajes para que la IA de Gemini genere descripciones adaptadas para tu CV, LinkedIn o tu portafolio personal.
               </p>
               <button
                 onClick={startProjectAnalysis}
@@ -644,9 +702,53 @@ export default function RepoPullRequestsPage() {
               {analyzingProject && (
                 <div className="flex items-center space-x-3 p-3.5 rounded-xl border border-indigo-900/20 bg-indigo-950/10 text-indigo-400 text-xs">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Grok está analizando tu código y escribiendo las descripciones en vivo...</span>
+                  <span>Gemini está analizando tu código y escribiendo las descripciones en vivo...</span>
                 </div>
               )}
+
+              {/* Toolbar */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl shadow-md">
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-slate-300 font-sans">Resumen Ejecutivo de {owner}/{repo}</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5 font-sans">Gemini analizó tu repositorio y generó descripciones para tu CV y LinkedIn.</p>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={startProjectAnalysis}
+                    disabled={analyzingProject}
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-slate-800 bg-slate-950/50 hover:bg-slate-900/40 text-xs font-semibold text-slate-300 hover:text-white transition-all disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Volver a Analizar</span>
+                  </button>
+                  <button
+                    onClick={handleSaveProjectAnalysis}
+                    disabled={isSavedInDb || saving || analyzingProject}
+                    className={`inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                      isSavedInDb
+                        ? 'bg-emerald-950/20 border-emerald-900/50 text-emerald-400 cursor-default font-bold'
+                        : 'bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500 hover:shadow-[0_0_15px_rgba(99,102,241,0.25)] disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]'
+                    }`}
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Guardando...</span>
+                      </>
+                    ) : isSavedInDb ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-emerald-400 animate-in zoom-in duration-200" />
+                        <span>Guardado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-3.5 w-3.5" />
+                        <span>Guardar Análisis</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
 
               {/* Analysis sections card */}
               {(() => {

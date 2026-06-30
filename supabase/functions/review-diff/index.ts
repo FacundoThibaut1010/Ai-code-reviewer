@@ -108,7 +108,7 @@ function streamMockReview(headers: any, diffText: string, settings: any) {
 
   (async () => {
     try {
-      const chunkSize = 12; // Send 12 characters per interval
+      const chunkSize = 40; // Send 40 characters per interval
       for (let i = 0; i < mockString.length; i += chunkSize) {
         const chunk = mockString.substring(i, i + chunkSize);
         const sseData = `data: ${JSON.stringify({
@@ -117,7 +117,7 @@ function streamMockReview(headers: any, diffText: string, settings: any) {
         })}\n\n`;
         
         await writer.write(encoder.encode(sseData));
-        await new Promise((resolve) => setTimeout(resolve, 35)); // 35ms delay for typing feel
+        await new Promise((resolve) => setTimeout(resolve, 10)); // 10ms delay for typing feel
       }
       await writer.write(encoder.encode('data: [DONE]\n\n'));
     } catch (err) {

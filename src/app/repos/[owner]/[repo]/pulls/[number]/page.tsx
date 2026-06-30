@@ -125,7 +125,7 @@ export default function PRDetailsPage() {
     showAlert({
       type: 'info',
       title: 'Análisis Iniciado',
-      message: 'Grok 3 está auditando tu Pull Request en tiempo real.',
+      message: 'Gemini está auditando tu Pull Request en tiempo real.',
     });
 
     try {

@@ -19,6 +19,8 @@ import {
   Trash2,
   Loader2,
   ExternalLink,
+  Check,
+  Copy,
 } from 'lucide-react';
 import {
   LineChart,
@@ -53,11 +55,121 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<
   return null;
 };
 
+function ProjectAnalysisHistoryRenderer({ review }: { review: SavedReview }) {
+  const content = (review.review_content || {}) as { linkedin?: string; cv?: string; portfolio?: string; };
+  const [copiedSection, setCopiedSection] = useState<'linkedin' | 'cv' | 'portfolio' | null>(null);
+
+  const copyText = (text: string | undefined, section: 'linkedin' | 'cv' | 'portfolio') => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedSection(section);
+    setTimeout(() => setCopiedSection(null), 2000);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* LinkedIn Version */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans">Versión para LinkedIn</span>
+          </div>
+          {content.linkedin && (
+            <button
+              onClick={() => copyText(content.linkedin, 'linkedin')}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-950/40 text-xs text-slate-300 hover:text-white transition-all shadow-sm active:scale-[0.98]"
+            >
+              {copiedSection === 'linkedin' ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-400 animate-in zoom-in duration-200" />
+                  <span className="text-emerald-400 font-semibold">Copiado</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Copiar</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        <p className="text-sm leading-relaxed text-slate-300 whitespace-pre-line bg-slate-950/20 p-3 rounded-lg border border-slate-900/30 font-sans">
+          {content.linkedin || 'No disponible.'}
+        </p>
+      </div>
+
+      {/* CV Version */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans">Versión para CV</span>
+          </div>
+          {content.cv && (
+            <button
+              onClick={() => copyText(content.cv, 'cv')}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-950/40 text-xs text-slate-300 hover:text-white transition-all shadow-sm active:scale-[0.98]"
+            >
+              {copiedSection === 'cv' ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-400 animate-in zoom-in duration-200" />
+                  <span className="text-emerald-400 font-semibold">Copiado</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Copiar</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        <p className="text-sm leading-relaxed text-slate-300 whitespace-pre-line bg-slate-950/20 p-3 rounded-lg border border-slate-900/30 font-sans">
+          {content.cv || 'No disponible.'}
+        </p>
+      </div>
+
+      {/* Portfolio Version */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans">Versión para Portfolio</span>
+          </div>
+          {content.portfolio && (
+            <button
+              onClick={() => copyText(content.portfolio, 'portfolio')}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-855 bg-slate-950/40 text-xs text-slate-300 hover:text-white transition-all shadow-sm active:scale-[0.98]"
+            >
+              {copiedSection === 'portfolio' ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-400 animate-in zoom-in duration-200" />
+                  <span className="text-emerald-400 font-semibold">Copiado</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Copiar</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        <p className="text-sm leading-relaxed text-slate-300 whitespace-pre-line bg-slate-950/20 p-3 rounded-lg border border-slate-900/30 font-sans">
+          {content.portfolio || 'No disponible.'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function HistoryPage() {
   const { showAlert } = useAlert();
   const [reviews, setReviews] = useState<SavedReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<'prs' | 'projects'>('prs');
 
   // Expanded review state (stores ID of review currently expanded)
   const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null);
@@ -143,6 +255,10 @@ export default function HistoryPage() {
 
   // Apply filters
   const filteredReviews = reviews.filter((rev) => {
+    // Filtrado por pestaña
+    const matchesTab = activeTab === 'prs' ? rev.pr_number > 0 : rev.pr_number === 0;
+    if (!matchesTab) return false;
+
     const matchesSearch =
       rev.pr_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       rev.repo_name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -170,8 +286,9 @@ export default function HistoryPage() {
     return matchesSearch && matchesRepo && matchesDate;
   });
 
-  // Generate chart data chronologically
-  const chartData = [...filteredReviews]
+  // Generate chart data chronologically (only for PR reviews, excluding project analyses)
+  const prReviews = reviews.filter((r) => r.pr_number > 0);
+  const chartData = [...prReviews]
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     .map((r) => ({
       id: r.id,
@@ -191,17 +308,17 @@ export default function HistoryPage() {
       pr: r.pr_title,
     }));
 
-  // Calculate statistics
-  const totalReviews = reviews.length;
+  // Calculate statistics (only for PR reviews)
+  const totalReviews = prReviews.length;
   
-  const totalBugs = reviews.reduce((sum, r) => {
+  const totalBugs = prReviews.reduce((sum, r) => {
     const bugsList = r.review_content?.bugs || [];
     return sum + bugsList.length;
   }, 0);
 
   const averageScore =
     totalReviews > 0
-      ? (reviews.reduce((sum, r) => sum + r.score, 0) / totalReviews).toFixed(1)
+      ? (prReviews.reduce((sum, r) => sum + r.score, 0) / totalReviews).toFixed(1)
       : '0.0';
 
   const toggleExpand = (id: string) => {
@@ -221,12 +338,44 @@ export default function HistoryPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-white flex items-center">
             <History className="mr-2.5 h-6 w-6 text-indigo-400" />
-            Historial de Reviews
+            Historial de Actividades
           </h2>
           <p className="text-sm text-slate-400 mt-1">
-            Revisá los reportes y estadísticas de tus Pull Requests auditadas anteriormente.
+            {activeTab === 'prs'
+              ? 'Revisá los reportes y estadísticas de tus Pull Requests auditadas anteriormente.'
+              : 'Consultá y copiá las descripciones de tus proyectos para CV, LinkedIn o tu portafolio personal.'}
           </p>
         </div>
+      </div>
+
+      {/* Tabs Selector */}
+      <div className="flex border-b border-slate-900 my-6 bg-slate-900/10 rounded-xl overflow-hidden p-1 self-start">
+        <button
+          onClick={() => {
+            setActiveTab('prs');
+            setExpandedReviewId(null);
+          }}
+          className={`px-5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
+            activeTab === 'prs'
+              ? 'bg-indigo-600 text-white font-bold shadow-md'
+              : 'text-slate-400 hover:text-slate-205 hover:bg-slate-900/30'
+          }`}
+        >
+          Auditorías de Pull Requests
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('projects');
+            setExpandedReviewId(null);
+          }}
+          className={`px-5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
+            activeTab === 'projects'
+              ? 'bg-indigo-600 text-white font-bold shadow-md'
+              : 'text-slate-400 hover:text-slate-205 hover:bg-slate-900/30'
+          }`}
+        >
+          Análisis de Proyectos
+        </button>
       </div>
 
       {/* Inline errors removed, replaced by Sileo alert context */}
@@ -237,94 +386,98 @@ export default function HistoryPage() {
         </div>
       ) : (
         <>
-          {/* Statistics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-            {/* Total reviews card */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Total Reviews
-                </p>
-                <h3 className="text-2xl font-bold text-white mt-1">{totalReviews}</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                <BarChart3 className="h-5 w-5" />
-              </div>
-            </div>
+          {activeTab === 'prs' && (
+            <>
+              {/* Statistics Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 animate-in fade-in duration-200">
+                {/* Total reviews card */}
+                <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-sans">
+                      Total Reviews
+                    </p>
+                    <h3 className="text-2xl font-bold text-white mt-1">{totalReviews}</h3>
+                  </div>
+                  <div className="p-3 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    <BarChart3 className="h-5 w-5" />
+                  </div>
+                </div>
 
-            {/* Total bugs card */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Bugs Detectados
-                </p>
-                <h3 className="text-2xl font-bold text-white mt-1">{totalBugs}</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                <AlertTriangle className="h-5 w-5" />
-              </div>
-            </div>
+                {/* Total bugs card */}
+                <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-sans">
+                      Bugs Detectados
+                    </p>
+                    <h3 className="text-2xl font-bold text-white mt-1">{totalBugs}</h3>
+                  </div>
+                  <div className="p-3 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                </div>
 
-            {/* Average score card */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Score Promedio
-                </p>
-                <h3 className="text-2xl font-bold text-white mt-1">{averageScore} / 10</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <Award className="h-5 w-5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Line Chart showing historical scores */}
-          {isMounted && filteredReviews.length > 0 && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/15 p-5 mb-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h4 className="text-sm font-bold text-white uppercase tracking-wider">Evolución de Score Histórico</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">Calidad y estabilidad del código a lo largo del tiempo</p>
+                {/* Average score card */}
+                <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-5 flex items-center justify-between shadow-sm">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-sans">
+                      Score Promedio
+                    </p>
+                    <h3 className="text-2xl font-bold text-white mt-1">{averageScore} / 10</h3>
+                  </div>
+                  <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <Award className="h-5 w-5" />
+                  </div>
                 </div>
               </div>
-              <div className="w-full overflow-hidden h-[240px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.3} vertical={false} />
-                    <XAxis 
-                      dataKey="fecha" 
-                      stroke="#64748b" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      dy={8}
-                    />
-                    <YAxis 
-                      domain={[0, 10]} 
-                      ticks={[0, 2, 4, 6, 8, 10]} 
-                      stroke="#64748b" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      dx={-4}
-                    />
-                    <RechartsTooltip 
-                      content={<CustomTooltip />} 
-                      cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }} 
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="score" 
-                      stroke="#6366F1" 
-                      strokeWidth={2.5}
-                      activeDot={{ r: 6, stroke: '#818cf8', strokeWidth: 1.5, fill: '#0f172a' }}
-                      dot={{ r: 4, stroke: '#6366F1', strokeWidth: 1.5, fill: '#0f172a' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+
+              {/* Line Chart showing historical scores */}
+              {isMounted && chartData.length > 0 && (
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/15 p-5 mb-6 shadow-sm animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-white uppercase tracking-wider font-sans">Evolución de Score Histórico</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 font-sans">Calidad y estabilidad del código a lo largo del tiempo</p>
+                    </div>
+                  </div>
+                  <div className="w-full overflow-hidden h-[240px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.3} vertical={false} />
+                        <XAxis 
+                          dataKey="fecha" 
+                          stroke="#64748b" 
+                          fontSize={10} 
+                          tickLine={false} 
+                          axisLine={false}
+                          dy={8}
+                        />
+                        <YAxis 
+                          domain={[0, 10]} 
+                          ticks={[0, 2, 4, 6, 8, 10]} 
+                          stroke="#64748b" 
+                          fontSize={10} 
+                          tickLine={false} 
+                          axisLine={false}
+                          dx={-4}
+                        />
+                        <RechartsTooltip 
+                          content={<CustomTooltip />} 
+                          cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }} 
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="score" 
+                          stroke="#6366F1" 
+                          strokeWidth={2.5}
+                          activeDot={{ r: 6, stroke: '#818cf8', strokeWidth: 1.5, fill: '#0f172a' }}
+                          dot={{ r: 4, stroke: '#6366F1', strokeWidth: 1.5, fill: '#0f172a' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Filters Area */}
@@ -336,10 +489,10 @@ export default function HistoryPage() {
               </div>
               <input
                 type="text"
-                placeholder="Buscar por título de PR o repositorio..."
+                placeholder={activeTab === 'prs' ? "Buscar por título de PR o repositorio..." : "Buscar por repositorio..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-4 text-sm text-white placeholder-slate-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-800 bg-slate-950/50 py-2.5 pl-9 pr-4 text-sm text-white placeholder-slate-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans"
               />
             </div>
 
@@ -376,13 +529,21 @@ export default function HistoryPage() {
           {filteredReviews.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-900/20 p-12 text-center my-6">
               <FolderOpen className="h-10 w-10 text-slate-600 mb-3" />
-              <p className="text-sm font-medium text-slate-400">No hay reviews guardadas.</p>
-              <p className="text-xs text-slate-500 mt-1">Realizá auditorías en tus repositorios y guardalas para verlas acá.</p>
+              <p className="text-sm font-medium text-slate-400 font-sans">
+                {activeTab === 'prs' ? 'No hay reviews guardadas.' : 'No hay análisis de proyectos guardados.'}
+              </p>
+              <p className="text-xs text-slate-500 mt-1 font-sans">
+                {activeTab === 'prs'
+                  ? 'Realizá auditorías en tus repositorios y guardalas para verlas acá.'
+                  : 'Realizá análisis de proyectos completos y guardalos para verlos acá.'}
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
               {filteredReviews.map((rev) => {
                 const isExpanded = expandedReviewId === rev.id;
+                const isProjectAnalysis = rev.pr_number === 0;
+                
                 const bugsCount = rev.review_content?.bugs?.length || 0;
                 const sugCount = rev.review_content?.sugerencias?.length || 0;
                 const perfCount = rev.review_content?.performance?.length || 0;
@@ -404,46 +565,59 @@ export default function HistoryPage() {
                             {rev.repo_owner}/{rev.repo_name}
                           </span>
                           <span className="text-slate-700 font-mono text-xs">•</span>
-                          <span className="font-mono text-xs text-slate-500">PR #{rev.pr_number}</span>
+                          {isProjectAnalysis ? (
+                            <span className="font-mono text-xs text-indigo-400 font-bold uppercase tracking-wider">Ficha de Proyecto</span>
+                          ) : (
+                            <span className="font-mono text-xs text-slate-500">PR #{rev.pr_number}</span>
+                          )}
                         </div>
-                        <h3 className="text-sm font-bold text-slate-200 truncate pr-4">
-                          {rev.pr_title}
+                        <h3 className="text-sm font-bold text-slate-200 truncate pr-4 font-sans">
+                          {isProjectAnalysis ? `Ficha Ejecutiva: ${rev.repo_name}` : rev.pr_title}
                         </h3>
                         <div className="flex flex-wrap gap-2 pt-1.5">
-                          {/* Issue counts pills */}
-                          {bugsCount > 0 && (
-                            <span className="rounded bg-rose-500/15 border border-rose-500/25 px-2 py-0.5 text-[9px] text-rose-400 font-mono font-bold">
-                              {bugsCount} Bugs
-                            </span>
-                          )}
-                          {sugCount > 0 && (
-                            <span className="rounded bg-amber-500/15 border border-amber-500/25 px-2 py-0.5 text-[9px] text-amber-400 font-mono font-bold">
-                              {sugCount} Mejoras
-                            </span>
-                          )}
-                          {perfCount > 0 && (
-                            <span className="rounded bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 text-[9px] text-emerald-400 font-mono font-bold">
-                              {perfCount} Perf
-                            </span>
-                          )}
-                          {secCount > 0 && (
+                          {isProjectAnalysis ? (
                             <span className="rounded bg-indigo-500/15 border border-indigo-500/25 px-2 py-0.5 text-[9px] text-indigo-400 font-mono font-bold">
-                              {secCount} Sec
+                              LinkedIn, CV & Portafolio
                             </span>
+                          ) : (
+                            <>
+                              {bugsCount > 0 && (
+                                <span className="rounded bg-rose-500/15 border border-rose-500/25 px-2 py-0.5 text-[9px] text-rose-400 font-mono font-bold">
+                                  {bugsCount} Bugs
+                                </span>
+                              )}
+                              {sugCount > 0 && (
+                                <span className="rounded bg-amber-500/15 border border-amber-500/25 px-2 py-0.5 text-[9px] text-amber-400 font-mono font-bold">
+                                  {sugCount} Mejoras
+                                </span>
+                              )}
+                              {perfCount > 0 && (
+                                <span className="rounded bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 text-[9px] text-emerald-400 font-mono font-bold">
+                                  {perfCount} Perf
+                                </span>
+                              )}
+                              {secCount > 0 && (
+                                <span className="rounded bg-indigo-500/15 border border-indigo-500/25 px-2 py-0.5 text-[9px] text-indigo-400 font-mono font-bold">
+                                  {secCount} Sec
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between sm:justify-end gap-4">
                         <div className="flex flex-col items-end text-right font-mono text-[10px] text-slate-500">
-                          <span className="text-slate-400">Fecha del Review</span>
+                          <span className="text-slate-400">{isProjectAnalysis ? 'Fecha de Análisis' : 'Fecha del Review'}</span>
                           <span>{new Date(rev.created_at).toLocaleDateString()}</span>
                         </div>
 
-                        {/* Score badge */}
-                        <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-xs font-mono font-bold ${getScoreColorClass(rev.score)}`}>
-                          <span>Score: {rev.score}/10</span>
-                        </div>
+                        {/* Score badge (only for PR reviews) */}
+                        {!isProjectAnalysis && (
+                          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-xs font-mono font-bold ${getScoreColorClass(rev.score)}`}>
+                            <span>Score: {rev.score}/10</span>
+                          </div>
+                        )}
 
                         {/* Action buttons */}
                         <div className="flex items-center space-x-2">
@@ -453,14 +627,14 @@ export default function HistoryPage() {
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             className="p-2 rounded-lg border border-slate-800 bg-slate-950/40 text-slate-400 hover:text-white hover:border-slate-700 transition-all"
-                            title="Ver PR en GitHub"
+                            title={isProjectAnalysis ? "Ver Repositorio en GitHub" : "Ver PR en GitHub"}
                           >
                             <ExternalLink className="h-4.5 w-4.5" />
                           </a>
                           <button
                             onClick={(e) => handleDeleteReview(rev.id, e)}
                             className="p-2 rounded-lg border border-transparent text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 hover:border-rose-900/30 transition-all"
-                            title="Eliminar review"
+                            title={isProjectAnalysis ? "Eliminar análisis" : "Eliminar review"}
                           >
                             <Trash2 className="h-4.5 w-4.5" />
                           </button>
@@ -474,7 +648,11 @@ export default function HistoryPage() {
                     {/* Detailed Review View Expanded */}
                     {isExpanded && (
                       <div className="border-t border-slate-800 p-6 bg-slate-950/60">
-                        <ReviewRenderer review={rev.review_content} isStreaming={false} />
+                        {isProjectAnalysis ? (
+                          <ProjectAnalysisHistoryRenderer review={rev} />
+                        ) : (
+                          <ReviewRenderer review={rev.review_content} isStreaming={false} />
+                        )}
                       </div>
                     )}
                   </div>
