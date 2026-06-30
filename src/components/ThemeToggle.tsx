@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const pathname = usePathname();
-  const isAuthPage = pathname === '/' || pathname === '/auth/callback';
 
   useEffect(() => {
     // Read theme from localStorage or document class
@@ -50,11 +49,15 @@ export default function ThemeToggle() {
     window.dispatchEvent(new Event('theme-change'));
   };
 
+  const isLoginPage = pathname === '/';
+
   return (
     <button
       onClick={toggleTheme}
-      className={`fixed bottom-6 left-6 h-12 w-12 rounded-full border border-slate-800/80 bg-slate-900/60 backdrop-blur-md text-slate-300 hover:text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 z-[80] ${
-        isAuthPage ? '' : 'md:hidden'
+      className={`h-12 w-12 rounded-full border border-slate-800/80 bg-slate-900/60 backdrop-blur-md text-slate-300 hover:text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 z-[80] ${
+        isLoginPage
+          ? 'fixed top-6 right-6 sm:top-auto sm:bottom-6 sm:left-6'
+          : 'fixed bottom-6 left-6 md:hidden'
       }`}
       title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
     >
