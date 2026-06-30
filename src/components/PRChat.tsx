@@ -54,6 +54,17 @@ export default function PRChat({ diffText, review }: PRChatProps) {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (chatOpen) {
+      document.body.classList.add('chat-open');
+    } else {
+      document.body.classList.remove('chat-open');
+    }
+    return () => {
+      document.body.classList.remove('chat-open');
+    };
+  }, [chatOpen]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isStreaming) return;

@@ -384,5 +384,11 @@ body {
   color: #dc2626 !important;
 }
 
+/* Ensure the sticky header has lower stack than chat backdrop when modal is open */
+body.chat-open nav {
+  z-index: 10 !important;
+}
+
+
 
 
