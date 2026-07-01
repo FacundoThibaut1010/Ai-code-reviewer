@@ -64,14 +64,18 @@ export default function InteractiveTour() {
   // Initialize and check status
   useEffect(() => {
     setMounted(true);
+    // Para propósitos de prueba, forzamos que se muestre siempre el tour
     const completed = localStorage.getItem('tutorial_completed');
-    if (completed !== 'true') {
+    if (completed === 'true') {
+      localStorage.removeItem('interactive_tour_step');
+      setCurrentStep(1);
+    } else {
       const savedStep = localStorage.getItem('interactive_tour_step');
       if (savedStep) {
         setCurrentStep(Number(savedStep));
       }
-      setIsOpen(true);
     }
+    setIsOpen(true);
   }, []);
 
   // Cleanup driver on unmount
