@@ -649,7 +649,7 @@ export default function RepoPullRequestsPage() {
       )}
 
       {activeTab === 'project' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div id="tour-project-analysis-view" className="space-y-6 animate-in fade-in duration-200">
           {/* Card to start / explain */}
           {!projectAnalysis && !analyzingProject && (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/10 p-8 text-center max-w-2xl mx-auto my-8">
