@@ -86,6 +86,9 @@ export default function LoginPage() {
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
           scopes: 'repo read:org',
+          queryParams: {
+            prompt: 'select_account',
+          },
         },
       });
 

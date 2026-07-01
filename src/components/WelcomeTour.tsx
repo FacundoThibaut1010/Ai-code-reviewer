@@ -177,8 +177,8 @@ export default function WelcomeTour() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-sileo-fade">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col text-slate-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm animate-sileo-fade">
+      <div className="fixed top-1/2 left-1/2 w-[calc(100%-2rem)] max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col text-slate-100 overflow-hidden animate-sileo-pop">
         
         {/* Skip button top-right (always visible) */}
         <button
@@ -204,7 +204,7 @@ export default function WelcomeTour() {
         </div>
 
         {/* Tour Step Content Container (Uses React key to trigger entry animation on step change) */}
-        <div key={currentStep} className="animate-sileo-pop flex flex-col items-center text-center flex-1">
+        <div key={currentStep} className="animate-sileo-fade flex flex-col items-center text-center flex-1">
           {/* Glowing active icon */}
           <div className={`flex h-16 w-16 items-center justify-center rounded-full border ring-8 mb-6 animate-bounce-subtle ${getStepColorClass(currentStep)}`}>
             {currentStepData.icon}
