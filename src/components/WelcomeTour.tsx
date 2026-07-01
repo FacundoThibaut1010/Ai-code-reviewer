@@ -28,10 +28,8 @@ export default function WelcomeTour() {
 
   useEffect(() => {
     setMounted(true);
-    const completed = localStorage.getItem('tutorial_completed');
-    if (completed !== 'true') {
-      setIsOpen(true);
-    }
+    // Forzado a true para propósitos de prueba, para que se muestre siempre al entrar
+    setIsOpen(true);
   }, []);
 
   useEffect(() => {
