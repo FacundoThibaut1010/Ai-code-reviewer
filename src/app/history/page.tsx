@@ -286,8 +286,8 @@ export default function HistoryPage() {
     return matchesSearch && matchesRepo && matchesDate;
   });
 
-  // Generate chart data chronologically (only for PR reviews, excluding project analyses)
-  const prReviews = reviews.filter((r) => r.pr_number > 0);
+  // Generate chart data chronologically (only for PR reviews, matching current filters)
+  const prReviews = filteredReviews;
   const chartData = [...prReviews]
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     .map((r) => ({

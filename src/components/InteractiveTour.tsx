@@ -270,7 +270,8 @@ export default function InteractiveTour() {
 
     const checkAlreadySaved = () => {
       const btn = document.querySelector('#tour-save-project-analysis-btn') as HTMLButtonElement | null;
-      if (btn && (btn.disabled || btn.textContent?.includes('Guardado'))) {
+      // Advance ONLY if the text says "Guardado" (successfully saved) and NOT during loading "Guardando..."
+      if (btn && btn.textContent?.includes('Guardado') && !btn.textContent?.includes('Guardando')) {
         // Wait a small moment to let the success UI register, then advance to step 4
         setTimeout(() => {
           advanceStep(4);
