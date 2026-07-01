@@ -250,9 +250,10 @@ export default function DashboardPage() {
       ) : (
         /* Repositories Grid */
         <div id="tour-repo-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredRepos.map((repo) => (
+          {filteredRepos.map((repo, idx) => (
             <div
               key={repo.id}
+              id={idx === 0 ? 'tour-first-repo' : undefined}
               onClick={() => router.push(`/repos/${repo.owner.login}/${repo.name}`)}
               className="group cursor-pointer rounded-xl border border-slate-800 bg-slate-900/20 p-5 flex flex-col justify-between hover:bg-slate-900/40 hover:border-indigo-500/40 transition-all duration-300 shadow-md glow-card"
             >

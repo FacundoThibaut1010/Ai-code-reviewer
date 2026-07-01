@@ -467,7 +467,7 @@ export default function RepoPullRequestsPage() {
       </div>
 
       {/* Selector de modo / Botones grandes destacados */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+      <div id="tour-repo-actions" className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
         <button
           onClick={() => setActiveTab('prs')}
           className={`flex items-center space-x-3.5 p-5 rounded-2xl border transition-all duration-300 text-left ${
@@ -588,7 +588,7 @@ export default function RepoPullRequestsPage() {
             </div>
           ) : (
             /* Pull Requests List */
-            <div className="rounded-xl border border-slate-800 bg-slate-950/30 overflow-hidden shadow-lg">
+            <div id="tour-pr-list" className="rounded-xl border border-slate-800 bg-slate-950/30 overflow-hidden shadow-lg">
               <div className="divide-y divide-slate-800/80">
                 {filteredPRs.map((pr) => (
                   <div

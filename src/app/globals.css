@@ -401,31 +401,59 @@ body.chat-open nav {
   }
 }
 
-@keyframes bounce-subtle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.tour-highlight-active {
+.driver-active-element {
   position: relative !important;
-  z-index: 50 !important;
-  pointer-events: none;
-  background-color: rgba(15, 23, 42, 0.6) !important;
-  border: 2px solid rgba(99, 102, 241, 0.6) !important;
-  border-radius: 1rem;
-  padding: 0.75rem;
+  z-index: 100002 !important;
   animation: tour-pulse-border 2s infinite !important;
+  border-color: rgba(99, 102, 241, 0.6) !important;
 }
 
-/* Ensure child cards stand out in light mode and dark mode during highlighting */
-.tour-highlight-active > div {
-  border-color: rgba(99, 102, 241, 0.3) !important;
+/* Driver.js Popover Dark Theme styling */
+.tour-popover-theme {
+  background-color: #0f172a !important; /* bg-slate-900 */
+  border: 1px solid rgba(99, 102, 241, 0.4) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5), 0 0 15px rgba(99, 102, 241, 0.2) !important;
+  color: #f1f5f9 !important;
+  padding: 1.25rem !important;
+  max-width: 320px !important;
+  font-family: inherit !important;
+}
+
+.tour-popover-theme .driver-popover-title {
+  color: #ffffff !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  padding-right: 2.25rem !important; /* room for the skip button */
+  font-family: inherit !important;
+}
+
+.tour-popover-theme .driver-popover-description {
+  color: #cbd5e1 !important; /* text-slate-300 */
+  font-size: 0.825rem !important;
+  line-height: 1.5 !important;
+  font-family: inherit !important;
+}
+
+/* Hide default buttons because progression is automatic */
+.tour-popover-theme .driver-popover-footer {
+  display: none !important;
+}
+
+/* Customize arrow colors dynamically based on side */
+.tour-popover-theme .driver-popover-arrow {
+  border-color: transparent !important;
+}
+.tour-popover-theme .driver-popover-arrow-side-top {
+  border-top-color: #0f172a !important;
+}
+.tour-popover-theme .driver-popover-arrow-side-bottom {
+  border-bottom-color: #0f172a !important;
+}
+.tour-popover-theme .driver-popover-arrow-side-left {
+  border-left-color: #0f172a !important;
+}
+.tour-popover-theme .driver-popover-arrow-side-right {
+  border-right-color: #0f172a !important;
 }

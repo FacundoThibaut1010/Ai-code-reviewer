@@ -219,6 +219,9 @@ export default function PRDetailsPage() {
         message: 'La revisión de código se completó correctamente.',
       });
 
+      // Dispatch event to advance the interactive tour
+      window.dispatchEvent(new CustomEvent('tour-analysis-finished'));
+
     } catch (err: unknown) {
       console.error('Error during AI Review streaming:', err);
       const errMsg = err instanceof Error ? err.message : 'Error durante la llamada de streaming con la IA.';
@@ -432,6 +435,7 @@ export default function PRDetailsPage() {
               {/* Action Buttons */}
               <div className="flex space-x-3 pt-2">
                 <button
+                  id="tour-analyze-btn"
                   onClick={handleStartAIReview}
                   disabled={isStreaming || !diffText}
                   className="flex-1 flex items-center justify-center space-x-2 rounded-xl bg-indigo-600 px-4 py-3 text-xs font-bold text-white hover:bg-indigo-500 transition-colors shadow-md disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
@@ -451,6 +455,7 @@ export default function PRDetailsPage() {
 
                 {Object.keys(review).length > 0 && !isStreaming && (
                   <button
+                    id="tour-save-review-btn"
                     onClick={handleSaveReview}
                     disabled={saving || isSavedInDb}
                     className={`flex items-center justify-center space-x-2 rounded-xl px-4 py-3 text-xs font-bold transition-all ${
@@ -479,7 +484,9 @@ export default function PRDetailsPage() {
 
             {/* AI Review Output Renderer */}
             {(Object.keys(review).length > 0 || isStreaming) && (
-              <ReviewRenderer review={review} isStreaming={isStreaming} />
+              <div id="tour-analysis-stream">
+                <ReviewRenderer review={review} isStreaming={isStreaming} />
+              </div>
             )}
 
             {Object.keys(review).length > 0 && !isStreaming && (

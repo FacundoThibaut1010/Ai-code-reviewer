@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import { AlertProvider } from '@/components/AlertProvider';
 import ThemeToggle from '@/components/ThemeToggle';
+import InteractiveTour from '@/components/InteractiveTour';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           <main className="flex-1 w-full flex flex-col">
             {children}
           </main>
+          <InteractiveTour />
           <ThemeToggle />
         </AlertProvider>
       </body>
