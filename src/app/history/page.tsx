@@ -450,7 +450,11 @@ export default function HistoryPage() {
                       <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.3} vertical={false} />
                         <XAxis 
-                          dataKey="fecha" 
+                          dataKey="id" 
+                          tickFormatter={(id) => {
+                            const item = chartData.find((d) => d.id === id);
+                            return item ? item.fecha : '';
+                          }}
                           stroke="#64748b" 
                           fontSize={10} 
                           tickLine={false} 
