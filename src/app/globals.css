@@ -389,6 +389,43 @@ body.chat-open nav {
   z-index: 10 !important;
 }
 
+/* Tour Highlighting & Animations */
+@keyframes tour-pulse-border {
+  0%, 100% {
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  }
+  50% {
+    border-color: rgba(99, 102, 241, 1);
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.4), 0 0 25px rgba(99, 102, 241, 0.3);
+  }
+}
 
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
 
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
 
+.tour-highlight-active {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: none;
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  border: 2px solid rgba(99, 102, 241, 0.6) !important;
+  border-radius: 1rem;
+  padding: 0.75rem;
+  animation: tour-pulse-border 2s infinite !important;
+}
+
+/* Ensure child cards stand out in light mode and dark mode during highlighting */
+.tour-highlight-active > div {
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
