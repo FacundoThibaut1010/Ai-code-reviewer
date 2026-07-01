@@ -469,6 +469,7 @@ export default function RepoPullRequestsPage() {
       {/* Selector de modo / Botones grandes destacados */}
       <div id="tour-repo-actions" className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
         <button
+          id="tour-prs-tab-btn"
           onClick={() => setActiveTab('prs')}
           className={`flex items-center space-x-3.5 p-5 rounded-2xl border transition-all duration-300 text-left ${
             activeTab === 'prs'
@@ -486,6 +487,7 @@ export default function RepoPullRequestsPage() {
         </button>
 
         <button
+          id="tour-project-tab-btn"
           onClick={() => {
             setActiveTab('project');
             // Trigger analysis automatically on first tab visit if empty
@@ -724,6 +726,7 @@ export default function RepoPullRequestsPage() {
                     <span>Volver a Analizar</span>
                   </button>
                   <button
+                    id="tour-save-project-analysis-btn"
                     onClick={handleSaveProjectAnalysis}
                     disabled={isSavedInDb || saving || analyzingProject}
                     className={`inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${

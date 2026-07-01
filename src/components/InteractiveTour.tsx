@@ -22,36 +22,42 @@ const TOUR_STEPS: Record<number, TourStepConfig> = {
     position: 'bottom'
   },
   2: {
-    element: '#tour-repo-actions',
+    element: '#tour-project-tab-btn',
     title: 'Opciones del repositorio',
-    description: "Tenés dos opciones: podés analizar un Pull Request o analizar el proyecto completo. Hacé click en 'Analizar Proyecto Completo' para conocer esa sección.",
+    description: "Hacé click en 'Analizar Proyecto Completo' para conocer esta sección.",
     position: 'bottom'
   },
   3: {
-    element: '#tour-project-analysis-view',
+    element: '#tour-save-project-analysis-btn',
     title: 'Analizar Proyecto Completo',
-    description: "Aquí la IA analiza el repositorio completo para generar descripciones profesionales. Ahora, hacé click en 'Analizar un Pull Request' para continuar con el flujo.",
-    position: 'top'
+    description: "Aquí la IA analiza el repositorio completo. Hacé click en 'Guardar Análisis' para guardarlo.",
+    position: 'bottom'
   },
   4: {
+    element: '#tour-prs-tab-btn',
+    title: 'Volver a Pull Requests',
+    description: "Ahora hacé click en 'Analizar un Pull Request' para continuar al listado de PRs.",
+    position: 'bottom'
+  },
+  5: {
     element: '#tour-pr-list',
     title: 'Elegir un Pull Request',
     description: 'Seleccioná un Pull Request para ver el código y analizarlo con IA',
     position: 'top'
   },
-  5: {
+  6: {
     element: '#tour-analyze-btn',
     title: 'Detalle del Pull Request',
     description: 'Tocá este botón para que la IA analice el código en tiempo real',
     position: 'left'
   },
-  6: {
+  7: {
     element: '#tour-analysis-stream',
     title: 'Generando el análisis',
     description: 'La IA está analizando tu código en tiempo real. Esperá a que termine.',
     position: 'top'
   },
-  7: {
+  8: {
     element: '#tour-save-review-btn',
     title: 'Guardar el review',
     description: 'Guardá el review para consultarlo después en tu historial',
@@ -119,7 +125,7 @@ export default function InteractiveTour() {
 
   // Main driver step-by-step logic
   useEffect(() => {
-    if (!mounted || !isOpen || currentStep === 0 || currentStep >= 8) {
+    if (!mounted || !isOpen || currentStep === 0 || currentStep >= 9) {
       if (driverRef.current) {
         driverRef.current.destroy();
         driverRef.current = null;
@@ -159,11 +165,11 @@ export default function InteractiveTour() {
             // Inyectar indicador de progreso
             const progressEl = popover.wrapper.querySelector('.tour-progress') as HTMLElement | null;
             if (progressEl) {
-              progressEl.textContent = `${currentStep} / 7`;
+              progressEl.textContent = `${currentStep} / 8`;
             } else {
               const newProgress = document.createElement('div');
               newProgress.className = 'tour-progress text-[10px] font-bold text-indigo-400 tracking-wider uppercase mb-2';
-              newProgress.textContent = `${currentStep} / 7`;
+              newProgress.textContent = `${currentStep} / 8`;
               popover.wrapper.insertBefore(newProgress, popover.wrapper.firstChild);
             }
 
@@ -226,27 +232,27 @@ export default function InteractiveTour() {
         }
       } else if (currentStep === 2) {
         // Must click "Analizar Proyecto Completo" tab button to advance to step 3
-        if (target.closest('#tour-repo-actions') && (target.textContent?.includes('Proyecto Completo') || target.closest('button:last-child'))) {
+        if (target.closest('#tour-project-tab-btn')) {
           advanceStep(3);
         }
-      } else if (currentStep === 3) {
-        // Must click "Analizar un Pull Request" tab button to advance to step 4
-        if (target.closest('#tour-repo-actions') && (target.textContent?.includes('Pull Request') || target.closest('button:first-child'))) {
-          advanceStep(4);
-        }
       } else if (currentStep === 4) {
-        if (target.closest('#tour-pr-list') || target.closest('[onClick*="pulls"]') || target.closest('.group.cursor-pointer')) {
+        // Must click "Analizar un Pull Request" tab button to advance to step 5
+        if (target.closest('#tour-prs-tab-btn')) {
           advanceStep(5);
         }
       } else if (currentStep === 5) {
-        if (target.closest('#tour-analyze-btn')) {
+        if (target.closest('#tour-pr-list') || target.closest('[onClick*="pulls"]') || target.closest('.group.cursor-pointer')) {
           advanceStep(6);
         }
-      } else if (currentStep === 7) {
+      } else if (currentStep === 6) {
+        if (target.closest('#tour-analyze-btn')) {
+          advanceStep(7);
+        }
+      } else if (currentStep === 8) {
         if (target.closest('#tour-save-review-btn')) {
           // Delay to let database operation trigger before showing final modal
           setTimeout(() => {
-            advanceStep(8);
+            advanceStep(9);
           }, 800);
         }
       }
@@ -258,12 +264,31 @@ export default function InteractiveTour() {
     };
   }, [currentStep, isOpen]);
 
-  // Step 6 progress listener (wait for analysis finished event to go to step 7)
+  // Step 3 automatic progress if already saved or once clicked & disabled
   useEffect(() => {
-    if (!isOpen || currentStep !== 6) return;
+    if (!isOpen || currentStep !== 3) return;
+
+    const checkAlreadySaved = () => {
+      const btn = document.querySelector('#tour-save-project-analysis-btn') as HTMLButtonElement | null;
+      if (btn && (btn.disabled || btn.textContent?.includes('Guardado'))) {
+        // Wait a small moment to let the success UI register, then advance to step 4
+        setTimeout(() => {
+          advanceStep(4);
+        }, 1000);
+      }
+    };
+
+    checkAlreadySaved();
+    const interval = setInterval(checkAlreadySaved, 400);
+    return () => clearInterval(interval);
+  }, [currentStep, isOpen]);
+
+  // Step 7 progress listener (wait for analysis finished event to go to step 8)
+  useEffect(() => {
+    if (!isOpen || currentStep !== 7) return;
 
     const handleAnalysisFinished = () => {
-      advanceStep(7);
+      advanceStep(8);
     };
 
     window.addEventListener('tour-analysis-finished', handleAnalysisFinished);
@@ -290,7 +315,7 @@ export default function InteractiveTour() {
 
     return (
       <div className="fixed inset-0 z-[100003] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-sileo-fade">
-        <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col text-slate-100 items-center text-center animate-sileo-pop border-indigo-500/20">
+        <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col text-slate-100 items-center text-center animate-tour-pop border-indigo-500/20">
           
           <h3 className="text-xl md:text-2xl font-bold text-white mb-4">
             Tutorial de bienvenida
@@ -320,8 +345,8 @@ export default function InteractiveTour() {
     );
   }
 
-  // Render centered congratulation modal for Step 8 (Final)
-  if (currentStep === 8) {
+  // Render centered congratulation modal for Step 9 (Final)
+  if (currentStep === 9) {
     if (driverRef.current) {
       driverRef.current.destroy();
       driverRef.current = null;
@@ -329,7 +354,7 @@ export default function InteractiveTour() {
 
     return (
       <div className="fixed inset-0 z-[100003] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-sileo-fade">
-        <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col text-slate-100 items-center text-center animate-sileo-pop border-emerald-500/20">
+        <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col text-slate-100 items-center text-center animate-tour-pop border-emerald-500/20">
           
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-950/40 border border-emerald-500/20 text-emerald-400 ring-8 ring-emerald-950/10 mb-6 border-emerald-900/30">
             <CheckCircle2 className="h-8 w-8" />
